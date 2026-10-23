@@ -1,0 +1,356 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>/* Estilo dos relatórios de fase — metodo-dmaic.
+   Usado por gerar_pdf.py. O destaque (--acc) pode ser trocado por projeto. */
+:root{
+  --acc:#2F5D8A; --acc-soft:#E8EFF6;
+  --ink:#1B2430; --ink-2:#44505E; --muted:#6B7785; --line:#DCE2E8; --paper:#FFFFFF;
+  --ach:#2F5D8A;  --ach-bg:#EAF1F8;   /* achado */
+  --dec:#2E7D5B;  --dec-bg:#E9F5EF;   /* decisão */
+  --tec:#5B6573;  --tec-bg:#F2F4F6;   /* detalhe técnico */
+  --cui:#B26B00;  --cui-bg:#FFF4E0;   /* cuidado / limitação */
+  --fal:#B3261E;  --fal-bg:#FCEBEA;   /* falha */
+}
+@page{ size:A4; margin:18mm 17mm 20mm }   /* rodapé com projeto e página: gerar_pdf.py */
+*{ box-sizing:border-box }
+html{ -webkit-print-color-adjust:exact; print-color-adjust:exact }
+body{ margin:0; background:var(--paper); color:var(--ink);
+  font:10.5pt/1.55 "Inter","Segoe UI",system-ui,sans-serif; hyphens:auto }
+
+/* cabeçalho */
+.cab{ border-left:4px solid var(--acc); padding:2mm 0 2mm 5mm; margin-bottom:6mm }
+.cab .fase{ font:600 8pt "IBM Plex Mono",monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--acc) }
+.cab .meta{ font-size:8.5pt; color:var(--muted); margin-top:1mm }
+h1{ font:700 20pt/1.18 "Inter",sans-serif; letter-spacing:-.01em; margin:1.5mm 0 0 }
+
+/* títulos-mensagem */
+h2{ font:700 13.5pt/1.25 "Inter",sans-serif; margin:8mm 0 2.5mm; color:var(--ink);
+  break-after:avoid; padding-top:3mm; border-top:1px solid var(--line) }
+h2 .n{ font:500 9pt "IBM Plex Mono",monospace; color:var(--acc); margin-right:2mm; vertical-align:2px }
+h3{ font:650 11.5pt/1.3 "Inter",sans-serif; margin:5mm 0 1.5mm; color:var(--ink); break-after:avoid }
+p{ margin:0 0 2.6mm }
+strong{ color:var(--ink) }
+a{ color:var(--acc) }
+code{ font:.88em "IBM Plex Mono",monospace; background:var(--tec-bg); padding:.1em .35em; border-radius:3px }
+
+/* número em destaque */
+.numero{ display:flex; align-items:baseline; gap:4mm; background:var(--acc-soft);
+  border-radius:6px; padding:4mm 5mm; margin:3mm 0 5mm; break-inside:avoid }
+.numero b{ font:700 30pt/1 "Inter",sans-serif; color:var(--acc); letter-spacing:-.02em; white-space:nowrap }
+.numero span{ font-size:10.5pt; color:var(--ink-2); line-height:1.4 }
+.numeros{ display:grid; grid-template-columns:repeat(auto-fit,minmax(40mm,1fr)); gap:3mm; margin:3mm 0 5mm }
+.numeros .numero{ display:block; margin:0 }
+.numeros .numero b{ display:block; font-size:20pt; margin-bottom:1.5mm }
+
+/* resumo */
+.resumo{ background:#F7F9FB; border:1px solid var(--line); border-radius:6px; padding:4mm 5mm; margin:0 0 5mm }
+.resumo p:last-child{ margin:0 }
+
+/* caixas (a partir de > [!TIPO] no markdown) */
+.caixa{ border-left:4px solid; border-radius:0 6px 6px 0; padding:3mm 4.5mm; margin:3mm 0 4mm; break-inside:avoid }
+.caixa .rot{ font:600 7.5pt "IBM Plex Mono",monospace; letter-spacing:.14em; text-transform:uppercase; margin-bottom:1.2mm }
+.caixa p:last-child{ margin-bottom:0 }
+.caixa.achado{ border-color:var(--ach); background:var(--ach-bg) } .caixa.achado .rot{ color:var(--ach) }
+.caixa.decisao{ border-color:var(--dec); background:var(--dec-bg) } .caixa.decisao .rot{ color:var(--dec) }
+.caixa.tecnico{ border-color:var(--tec); background:var(--tec-bg); font-size:9.5pt } .caixa.tecnico .rot{ color:var(--tec) }
+.caixa.cuidado{ border-color:var(--cui); background:var(--cui-bg) } .caixa.cuidado .rot{ color:var(--cui) }
+.caixa.falha{ border-color:var(--fal); background:var(--fal-bg) } .caixa.falha .rot{ color:var(--fal) }
+
+/* figuras */
+figure,p>img:only-child{ margin:3mm 0 5mm; break-inside:avoid }
+img{ max-width:100%; height:auto; display:block; margin:0 auto; border-radius:4px }
+figcaption,.legenda{ font-size:9pt; color:var(--muted); margin-top:1.5mm; text-align:left }
+
+/* tabelas */
+table{ width:100%; border-collapse:collapse; margin:2mm 0 5mm; font-size:9pt; break-inside:auto }
+thead{ display:table-header-group }
+tr{ break-inside:avoid }
+th{ text-align:left; font:600 7.5pt "IBM Plex Mono",monospace; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); border-bottom:1.5px solid var(--ink); padding:1.8mm 2.5mm 1.8mm 0 }
+td{ border-bottom:1px solid var(--line); padding:1.8mm 2.5mm 1.8mm 0; vertical-align:top }
+
+/* veredito do tollgate */
+.ok,.ressalva,.falha-t{ font:600 7.5pt "IBM Plex Mono",monospace; padding:.6mm 2mm; border-radius:20px; white-space:nowrap }
+.ok{ background:var(--dec-bg); color:var(--dec) }
+.ressalva{ background:var(--cui-bg); color:var(--cui) }
+.falha-t{ background:var(--fal-bg); color:var(--fal) }
+
+/* bastidores: menor, no fim */
+.bastidores{ font-size:9pt; color:var(--ink-2) }
+ul,ol{ margin:0 0 3mm; padding-left:5mm } li{ margin-bottom:1mm }
+blockquote{ margin:3mm 0; padding-left:4mm; border-left:3px solid var(--line); color:var(--ink-2) }
+</style></head><body>
+<header class="cab"><div class="fase">Fase 2A</div><h1>O dado do Siconfi serve ao projeto, depois de uma correção em Armação dos Búzios e com cinco ressalvas</h1><div class="meta">Measure, o instrumento — Saúde fiscal do Rio de Janeiro · 23/10/2026 · exercício de 2024 · versão 1</div></header>
+<div class="numero"><b>119 de 119</b><span>entes com a despesa em saúde do RREO igual à da DCA, a segunda fonte, depois de corrigir Búzios (antes da correção: 118 de 119)</span></div>
+
+<div class="resumo">
+<p><strong>Em três linhas.</strong> Conferi o dado do Siconfi contra uma segunda fonte (a DCA, a prestação de contas anual do ente) e contra o texto das leis. Corrigi um município, troquei a população pela do IBGE e achei pontos que pedem apuração de quem entende de controle. A fase passou no tollgate, com ressalva.</p>
+</div>
+<h2><span class="n">1</span>A pergunta desta fase</h2>
+<p><strong>Será que posso confiar nos números que vou comparar?</strong> O projeto compara o gasto em saúde de 27 estados e 92 municípios. Se a régua estiver torta, toda comparação depois dela também fica. Por isso esta fase confere o dado antes de medir qualquer coisa.</p>
+<h2><span class="n">2</span>O que eu encontrei</h2>
+<h3>O Anexo 02 de Búzios estava errado, e a DCA mostrou onde</h3>
+<p>O relatório de Búzios traz a despesa em saúde de R$ 33,9 mi, mas a DCA, que é a prestação de contas do mesmo ano, mostra <strong>R$ 156,2 mi</strong>. O relatório dele é incoerente por dentro: o valor "no bimestre" (R$ 159,2 mi) é maior que o acumulado "até o bimestre" (R$ 33,9 mi), o que não acontece em nenhum outro município.</p>
+<table>
+<thead>
+<tr>
+<th>Fonte</th>
+<th>Despesa total</th>
+<th>Saúde</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RREO Anexo 01</td>
+<td>R$ 542,7 mi</td>
+<td>não traz função</td>
+</tr>
+<tr>
+<td>RREO Anexo 02 (o que eu usava)</td>
+<td>R$ 269,3 mi</td>
+<td>R$ 33,9 mi</td>
+</tr>
+<tr>
+<td><strong>DCA (prestação de contas anual)</strong></td>
+<td><strong>R$ 530,7 mi</strong></td>
+<td><strong>R$ 156,2 mi</strong></td>
+</tr>
+<tr>
+<td>SIOPS (só recursos próprios em saúde)</td>
+<td></td>
+<td>R$ 72,9 mi</td>
+</tr>
+</tbody>
+</table>
+<p>A DCA concorda com o Anexo 01 (diferença de 2%) e com o SIOPS (recursos próprios não podem passar do total). Nos outros 118 entes, a saúde do RREO bate com a DCA em até 1%.</p>
+<div class="caixa tecnico">
+<div class="rot">Detalhe técnico</div>
+<p><strong>Detalhe técnico (M2, acurácia).</strong> Segunda fonte: DCA Anexo I-E, função 10, despesa empenhada, coletada pelo script 13 (119 chamadas, 0 falhas). O resultado por ente está em <code>conferencia_saude_rreo_vs_dca.csv</code>. Decisão: usar a DCA só para Búzios; para os demais, o RREO bate, e manter uma única fonte evita misturar critérios.</p>
+</div>
+<h3>A população do Siconfi não bate com nenhum ano do IBGE</h3>
+<p>O cadastro de entes do Siconfi traz a população de <strong>2025</strong> do IBGE nos 92 municípios. Já o campo de população dos relatórios, que eu usava, não bate com nenhum ano do IBGE (2018 a 2025, nem o Censo 2022). Troquei pela <strong>estimativa de 2024 do IBGE</strong>, que é oficial e do mesmo ano da despesa.</p>
+<p>Isso muda quem é o maior e o menor: o menor gasto por habitante passou de R$ 1.026 (São Pedro da Aldeia) para <strong>R$ 900 (São João de Meriti)</strong>, e o maior de R$ 6.853 (Carapebus) para <strong>R$ 6.465 (São João da Barra)</strong>. A ordem geral quase não muda (correlação de Spearman de 0,99).</p>
+<h3>Seis pontos pedem apuração, e eu não sei explicá-los</h3>
+<div class="caixa achado">
+<div class="rot">Achado</div>
+<p><strong>Achados para quem trabalha com controle.</strong> Todos são dado declarado pelos próprios entes, sem auditoria minha, e a causa de cada um não está confirmada. Não afirmo irregularidade.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>O que o dado mostra</th>
+<th>O que falta para explicar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Barra do Piraí, Rio Bonito e Porciúncula</strong> empenharam de 17% a 20% acima da receita realizada somada aos saldos de anos anteriores. A despesa existe (a DCA confirma)</td>
+<td>Fonte de recurso que o relatório não mostra, déficit real ou erro de declaração</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Itaperuna</strong>: a RCL do RGF é R$ 192,8 mi, e a do RREO do mesmo ente é R$ 583,8 mi (3,0 vezes). Com a segunda, o pessoal total seria 47,5% da RCL, e não 141,7%</td>
+<td>Qual dos dois relatórios está certo</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Areal e Miracema</strong> preencheram só 4 e 2 dos 12 meses de receita no demonstrativo da RCL; a RCL deles está subestimada por isso</td>
+<td>Por que os meses ficaram em branco</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Maricá</strong> declara limite de pessoal do Executivo de 60% (a lei diz 54%). <strong>Mesquita</strong> declara 54% para o Legislativo (a lei diz 6%). <strong>Nilópolis</strong> (6,23%) e <strong>Valença</strong> (1%) também diferem. <strong>Pará, Bahia e Goiás</strong> declaram 48,6% para o Executivo (a lei diz 49%)</td>
+<td>Troca de campo na declaração, ou regra local que não li</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Porciúncula</strong>: a receita no RREO (R$ 152,3 mi) é 26% maior que a da DCA (R$ 120,8 mi)</td>
+<td>A origem da diferença</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Roraima, Carmo e Paracambi</strong> declaram limites de dívida fora do padrão (90,3%, 21,3% e 126,7%), mas a dívida deles está muito abaixo de qualquer limite, então não afeta o resultado</td>
+<td>Mesmo item de troca de campo</td>
+</tr>
+</tbody>
+</table>
+<h3>Todas as fontes casam, com duas exceções explicadas</h3>
+<p>As nove junções que o projeto faz (Siconfi, DCA, IBGE, CEPERJ, malha, SIOPS) casam em 100% dos entes, <strong>exceto</strong>: o Anexo 03 do RREO (12 ausências, os municípios de relatório simplificado, que a lei dispensa) e o SIOPS dos estados (sem o Distrito Federal).</p>
+<h3>Os limites da lei foram lidos no texto oficial</h3>
+<p>Conferi no texto oficial os limites de pessoal (LRF, arts. 19, 20 e 22), de dívida (Resolução do Senado 40/2001: 2 vezes a RCL para estados e DF, 1,2 vez para municípios) e de saúde (LC 141/2012: 12% estados, 15% municípios). <strong>Os 92 municípios e os 26 estados do SIOPS estão acima do mínimo de saúde.</strong> Só o estado do RJ está acima do limite legal de dívida (211,3% da RCL contra 200%).</p>
+<h2><span class="n">3</span>O que eu decidi</h2>
+<div class="caixa decisao">
+<div class="rot">Decisão</div>
+<p><strong>Decisões</strong>, cada uma com a alternativa descartada.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Escolha</th>
+<th>O que usei</th>
+<th>O que mais considerei</th>
+<th>Por que esta</th>
+<th>Evidência</th>
+<th>Regra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Saúde de Búzios</td>
+<td>Valor da DCA</td>
+<td>Valor do RREO Anexo 02</td>
+<td>O Anexo 02 é incoerente por dentro; a DCA concorda com o Anexo 01 e com o SIOPS</td>
+<td>docs/07, A2</td>
+<td>M2</td>
+</tr>
+<tr>
+<td>População</td>
+<td>Estimativa 2024 do IBGE</td>
+<td>Campo do Siconfi (o que o projeto usava)</td>
+<td>O campo não bate com nenhum ano; o IBGE é oficial e do ano da despesa</td>
+<td>docs/07, B1</td>
+<td>M4</td>
+</tr>
+<tr>
+<td>Limite de dívida</td>
+<td>Limite legal (2x e 1,2x a RCL)</td>
+<td>Limite declarado pelo ente</td>
+<td>Três entes declaram valores fora do padrão e dois não declaram</td>
+<td>docs/07, A1</td>
+<td>M2</td>
+</tr>
+<tr>
+<td>Limite de pessoal</td>
+<td>Limite legal ao lado do declarado</td>
+<td>Só o declarado</td>
+<td>Sete entes declaram valores que diferem da LRF</td>
+<td>docs/04, C1</td>
+<td>M2</td>
+</tr>
+<tr>
+<td>Atípicos</td>
+<td>Marcar e mostrar com e sem</td>
+<td>Remover</td>
+<td>Sem prova de erro, remover é garimpo</td>
+<td>notebook 02, seção 5</td>
+<td>M5</td>
+</tr>
+<tr>
+<td>Pendência sem explicação</td>
+<td>Registrar como achado, com ressalva</td>
+<td>Esconder ou tratar como erro de dado</td>
+<td>O público do projeto (controles e auditoria) aprofunda o que não se explica</td>
+<td>decisão do Matheus, 23/10/2026</td>
+<td>M5</td>
+</tr>
+</tbody>
+</table>
+<h2><span class="n">4</span>Para você explicar esta fase</h2>
+<p><strong>A fase em 30 segundos.</strong> Antes de comparar estados e municípios, conferi se os números são confiáveis. Comparei o relatório de cada ente com a prestação de contas anual dele e com o texto da lei. O dado de saúde bate em todos os 119 entes depois de corrigir um município. No caminho achei casos que um auditor gostaria de investigar, como três municípios que gastaram bem acima do que arrecadaram.</p>
+<p><strong>As perguntas que vão te fazer</strong></p>
+<ul>
+<li><strong>Por que você não só confiou no Siconfi?</strong> Porque são dados declarados pelos próprios entes. Um deles tinha um relatório incoerente por dentro, e só uma segunda fonte mostrou isso.</li>
+<li><strong>Por que trocou a população?</strong> A que eu usava não batia com nenhum ano do IBGE. Usei a estimativa de 2024, do mesmo ano da despesa. O custo é que o maior e o menor município mudaram.</li>
+<li><strong>Isso quer dizer que esses municípios fizeram algo errado?</strong> Não. Quer dizer que os dados públicos não explicam a diferença. Cabe a quem audita apurar.</li>
+<li><strong>Por que a DCA como segunda fonte?</strong> É a prestação de contas anual do mesmo ente, entregue em outro relatório e com outra finalidade.</li>
+</ul>
+<p><strong>Os números para saber de cor.</strong> 119 de 119 entes batem com a DCA; R$ 156,2 mi (e não R$ 33,9 mi) é a saúde de Búzios; 92 de 92 municípios acima do mínimo de saúde.</p>
+<h2><span class="n">5</span>O que ainda não sei</h2>
+<ul>
+<li><strong>A origem da população do campo dos relatórios.</strong> Sei que não é do IBGE em nenhum ano.</li>
+<li><strong>Qual versão a API devolve quando há retificação.</strong> 58 dos 92 municípios têm algum RREO ou RGF retificado em 2024. Tratei os dados como a versão vigente, por inferência.</li>
+<li><strong>O Distrito Federal no SIOPS.</strong> O arquivo que consegui era do indicador errado.</li>
+<li><strong>Parte das regras só tem fonte secundária:</strong> a Defensoria no limite do Executivo, o Anexo 12 vindo do SIOPS e a padronização das funções (Portaria 42/1999). O art. 166, § 16, da Constituição, como o RGF o cita, não achei no texto vigente.</li>
+<li><strong>Atraso de entrega</strong> dos relatórios, que não auditei.</li>
+</ul>
+<h2><span class="n">6</span>O veredito</h2>
+<table>
+<thead>
+<tr>
+<th>Critério</th>
+<th>Veredito</th>
+<th>Motivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Instrumento auditado nas seis dimensões</td>
+<td><span class="ok">OK</span></td>
+<td>12 testes, 7 sem ressalva</td>
+</tr>
+<tr>
+<td>Dado conferido contra segunda fonte</td>
+<td><span class="ok">OK</span></td>
+<td>119 de 119 depois de corrigir Búzios</td>
+</tr>
+<tr>
+<td>Pendências de dado resolvidas</td>
+<td><span class="ok">OK</span></td>
+<td>Todas fechadas como confirmadas, corrigidas ou sem confirmação</td>
+</tr>
+<tr>
+<td>Fundamento legal conferido em fonte oficial</td>
+<td><span class="ressalva">RESSALVA</span></td>
+<td>LRF, LC 141 e Resolução do Senado no texto oficial; Defensoria, Anexo 12 e funções só em fonte secundária</td>
+</tr>
+<tr>
+<td>Cobertura das fontes</td>
+<td><span class="ressalva">RESSALVA</span></td>
+<td>Distrito Federal fora do SIOPS</td>
+</tr>
+<tr>
+<td>Qual versão da retificação a API devolve</td>
+<td><span class="ressalva">RESSALVA</span></td>
+<td>Inferência não confirmada</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tollgate: aprovado com ressalva.</strong> Nenhuma ressalva impede o baseline.</p>
+<h2><span class="n">7</span>O próximo capítulo</h2>
+<p>A fase 2B fixa o ponto de partida: a distribuição do gasto por habitante e da fatia da saúde, por grupo e por região, e o baseline congelado. <strong>O que muda no plano:</strong> a população do IBGE passa a ser a base, e os limites legais entram ao lado dos declarados.</p>
+<h2>Bastidores</h2>
+<ol>
+<li>Segunda fonte da saúde: <code>scripts/13_coleta_dca_funcao_saude.py</code>.</li>
+<li>Demonstrativo da RCL para conferir o RGF: <code>scripts/14_coleta_rreo_anexo03_rcl.py</code>.</li>
+<li>População: SIDRA do IBGE, tabelas 6579 e 4714 (<code>dados_brutos/ibge_populacao_*.json</code>).</li>
+<li>Leis lidas no texto oficial: ver <code>docs/02</code>, seção 6.</li>
+<li>Aplicação das decisões e regeneração: notebook 01 (indicadores), planilha (scripts 09, 11 e 10) e notebook 02 (<code>notebooks/02_measure_qualidade_e_baseline.ipynb</code>).</li>
+<li>Registro de cada pendência: <code>docs/04</code> e <code>docs/07</code>.</li>
+</ol>
+<h2>Adendo de 23/10/2026: pendências de regra fechadas</h2>
+<p>Depois do relatório, fechei em texto oficial quatro regras que estavam só em fonte secundária.</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Resultado</th>
+<th>Veredito atualizado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Defensoria no limite de pessoal (B5)</td>
+<td>A Defensoria entrega o próprio RGF, sem as linhas de despesa total e de limite. Fica fora da minha soma de pessoal (0,5% a 2,5% do Executivo; no RJ, 55,4% da RCL em vez de 54,3%, mesma posição)</td>
+<td><span class="ok">OK</span></td>
+</tr>
+<tr>
+<td>Anexos 8 e 12 vazios (B6)</td>
+<td>A Portaria STN 642/2019 manda esses anexos ao SIOPE e ao SIOPS, e não ao Siconfi</td>
+<td><span class="ok">OK</span></td>
+</tr>
+<tr>
+<td>Função Saúde igual entre entes (B7)</td>
+<td>A função 10 e as subfunções 301 a 306 são definidas pela Portaria SOF 42/1999, para todos os entes. Não prova que cada ente classifica o mesmo conteúdo</td>
+<td><span class="ok">OK</span></td>
+</tr>
+<tr>
+<td>Art. 166, § 16, da Constituição (C2)</td>
+<td>Achei o texto da EC 100/2019: a transferência das emendas de bancada fica fora da base da RCL para os limites de pessoal</td>
+<td><span class="ok">OK</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tollgate atualizado:</strong> o critério "fundamento legal conferido em fonte oficial" passa de ressalva para <span class="ok">OK</span>. Seguem como ressalva a cobertura (DF fora do SIOPS) e a versão da retificação (B4, ainda sem fonte oficial lida). A origem do CEPERJ e da malha está registrada pela instituição.</p>
+</body></html>

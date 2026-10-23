@@ -1,0 +1,17 @@
+# Python e Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Arquivos temporários do Excel e cópias intermediárias
+~$*
+*_calc.xlsx
+
+# Cópias de segurança de versões anteriores (o histórico fica no git)
+**/arquivo/
+dados_tratados/arquivo/
+notebooks/arquivo/
+planilhas/arquivo/
+
+# Rascunhos de posts ainda não publicados (ficam só no computador do autor)
+docs/06-posts-linkedin.md

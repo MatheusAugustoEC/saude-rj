@@ -1,0 +1,19 @@
+﻿testado_em,pagina,url,status_http,bytes,erro
+2026-10-21T18:40:52,gov.br: página do SIOPS,https://www.gov.br/saude/pt-br/acesso-a-informacao/siops,200,146497,
+2026-10-21T18:40:52,"SIOPS: % aplicado LC 141, municípios",http://siops.datasus.gov.br/rel_perc_LC141.php?e=2,,0,<urlopen error [WinError 10060] Uma tentativa de conexão falhou porque o componente conectado não re
+2026-10-21T18:40:52,"SIOPS: % aplicado LC 141, estados e DF",http://siops.datasus.gov.br/rel_perc_LC141.php?e=1,,0,<urlopen error [WinError 10060] Uma tentativa de conexão falhou porque o componente conectado não re
+2026-10-21T18:40:52,"SIOPS: demonstrativo da saúde (RREO), municípios",http://siops.datasus.gov.br/consleirespfiscal.php,,0,<urlopen error [WinError 10060] Uma tentativa de conexão falhou porque o componente conectado não re
+2026-10-21T18:40:52,SIOPS: página inicial (http),http://siops.datasus.gov.br/,,0,<urlopen error [WinError 10060] Uma tentativa de conexão falhou porque o componente conectado não re
+2026-10-21T18:40:52,SIOPS: página inicial (https),https://siops.datasus.gov.br/,,0,<urlopen error [WinError 10060] Uma tentativa de conexão falhou porque o componente conectado não re
+2026-10-22T18:30:04,gov.br: página do SIOPS,https://www.gov.br/saude/pt-br/acesso-a-informacao/siops,200,146497,
+2026-10-22T18:30:04,"SIOPS: % aplicado LC 141, municípios",http://siops.datasus.gov.br/rel_perc_LC141.php?e=2,,0,<urlopen error [WinError 10060] Uma tentativa de conexão falhou porque o componente conectado não re
+2026-10-22T18:30:04,"SIOPS: % aplicado LC 141, estados e DF",http://siops.datasus.gov.br/rel_perc_LC141.php?e=1,,0,<urlopen error [WinError 10060] Uma tentativa de conexão falhou porque o componente conectado não re
+2026-10-22T18:30:04,"SIOPS: demonstrativo da saúde (RREO), municípios",http://siops.datasus.gov.br/consleirespfiscal.php,,0,<urlopen error [WinError 10060] Uma tentativa de conexão falhou porque o componente conectado não re
+2026-10-22T18:30:04,SIOPS: página inicial (http),http://siops.datasus.gov.br/,,0,<urlopen error [WinError 10060] Uma tentativa de conexão falhou porque o componente conectado não re
+2026-10-22T18:30:04,SIOPS: página inicial (https),https://siops.datasus.gov.br/,,0,<urlopen error [WinError 10060] Uma tentativa de conexão falhou porque o componente conectado não re
+2026-10-22T18:57:22,gov.br: página do SIOPS,https://www.gov.br/saude/pt-br/acesso-a-informacao/siops,200,146497,
+2026-10-22T18:57:22,"SIOPS: % aplicado LC 141, municípios",http://siops.datasus.gov.br/rel_perc_LC141.php?e=2,200,39682,
+2026-10-22T18:57:22,"SIOPS: % aplicado LC 141, estados e DF",http://siops.datasus.gov.br/rel_perc_LC141.php?e=1,200,39444,
+2026-10-22T18:57:22,"SIOPS: demonstrativo da saúde (RREO), municípios",http://siops.datasus.gov.br/consleirespfiscal.php,200,44525,
+2026-10-22T18:57:22,SIOPS: página inicial (http),http://siops.datasus.gov.br/,200,2509,
+2026-10-22T18:57:22,SIOPS: página inicial (https),https://siops.datasus.gov.br/,200,2509,

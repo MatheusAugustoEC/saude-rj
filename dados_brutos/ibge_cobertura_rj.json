@@ -1,0 +1,123 @@
+{
+ "coletado_em": "2026-10-20T18:45:30",
+ "tabelas": {
+  "6579": {
+   "descricao": "Estimativas de População: população residente estimada",
+   "N3": {
+    "total_brasil": 27,
+    "rj": 1,
+    "estado_rj_presente": true
+   },
+   "N6": {
+    "total_brasil": 5571,
+    "rj": 92,
+    "estado_rj_presente": false
+   }
+  },
+  "10157": {
+   "descricao": "Censo 2022: população por nacionalidade, sexo e grupos de idade",
+   "N3": {
+    "total_brasil": 27,
+    "rj": 1,
+    "estado_rj_presente": true
+   },
+   "N6": {
+    "total_brasil": 5570,
+    "rj": 92,
+    "estado_rj_presente": false
+   }
+  },
+  "4938": {
+   "descricao": "PNS 2013-2019: pessoas com plano de saúde, por sexo e situação do domicílio",
+   "N3": {
+    "total_brasil": 27,
+    "rj": 1,
+    "estado_rj_presente": true
+   },
+   "N6": {
+    "total_brasil": 27,
+    "rj": 1,
+    "estado_rj_presente": false
+   }
+  },
+  "4949": {
+   "descricao": "PNS 2013-2019: pessoas com plano de saúde, por grupo de idade",
+   "N3": {
+    "total_brasil": 27,
+    "rj": 1,
+    "estado_rj_presente": true
+   },
+   "N6": {
+    "total_brasil": 27,
+    "rj": 1,
+    "estado_rj_presente": false
+   }
+  },
+  "6803": {
+   "descricao": "Censo 2022: domicílios por ligação à rede geral de água e forma de abastecimento",
+   "N3": {
+    "total_brasil": 27,
+    "rj": 1,
+    "estado_rj_presente": true
+   },
+   "N6": {
+    "total_brasil": 5570,
+    "rj": 92,
+    "estado_rj_presente": false
+   }
+  },
+  "6805": {
+   "descricao": "Censo 2022: domicílios por tipo de esgotamento sanitário",
+   "N3": {
+    "total_brasil": 27,
+    "rj": 1,
+    "estado_rj_presente": true
+   },
+   "N6": {
+    "total_brasil": 5570,
+    "rj": 92,
+    "estado_rj_presente": false
+   }
+  },
+  "7358": {
+   "descricao": "Projeção da População 2018: população por sexo e idade",
+   "N3": {
+    "total_brasil": 27,
+    "rj": 1,
+    "estado_rj_presente": true
+   },
+   "N6": {
+    "total_brasil": 0,
+    "rj": 0,
+    "estado_rj_presente": false
+   }
+  },
+  "1300": {
+   "descricao": "PNSB 2008: municípios com tratamento de esgoto sanitário",
+   "N3": {
+    "total_brasil": 27,
+    "rj": 1,
+    "estado_rj_presente": true
+   },
+   "N6": {
+    "total_brasil": 5564,
+    "rj": 92,
+    "estado_rj_presente": false
+   }
+  },
+  "216": {
+   "descricao": "AMS 1976-2005: leitos para internação",
+   "N3": {
+    "total_brasil": 0,
+    "rj": 0,
+    "estado_rj_presente": false
+   },
+   "N6": {
+    "total_brasil": 0,
+    "rj": 0,
+    "estado_rj_presente": false
+   }
+  }
+ },
+ "falhas": []
+}
