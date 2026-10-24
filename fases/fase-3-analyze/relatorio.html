@@ -1,0 +1,356 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>/* Estilo dos relatórios de fase — metodo-dmaic.
+   Usado por gerar_pdf.py. O destaque (--acc) pode ser trocado por projeto. */
+:root{
+  --acc:#2F5D8A; --acc-soft:#E8EFF6;
+  --ink:#1B2430; --ink-2:#44505E; --muted:#6B7785; --line:#DCE2E8; --paper:#FFFFFF;
+  --ach:#2F5D8A;  --ach-bg:#EAF1F8;   /* achado */
+  --dec:#2E7D5B;  --dec-bg:#E9F5EF;   /* decisão */
+  --tec:#5B6573;  --tec-bg:#F2F4F6;   /* detalhe técnico */
+  --cui:#B26B00;  --cui-bg:#FFF4E0;   /* cuidado / limitação */
+  --fal:#B3261E;  --fal-bg:#FCEBEA;   /* falha */
+}
+@page{ size:A4; margin:18mm 17mm 20mm }   /* rodapé com projeto e página: gerar_pdf.py */
+*{ box-sizing:border-box }
+html{ -webkit-print-color-adjust:exact; print-color-adjust:exact }
+body{ margin:0; background:var(--paper); color:var(--ink);
+  font:10.5pt/1.55 "Inter","Segoe UI",system-ui,sans-serif; hyphens:auto }
+
+/* cabeçalho */
+.cab{ border-left:4px solid var(--acc); padding:2mm 0 2mm 5mm; margin-bottom:6mm }
+.cab .fase{ font:600 8pt "IBM Plex Mono",monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--acc) }
+.cab .meta{ font-size:8.5pt; color:var(--muted); margin-top:1mm }
+h1{ font:700 20pt/1.18 "Inter",sans-serif; letter-spacing:-.01em; margin:1.5mm 0 0 }
+
+/* títulos-mensagem */
+h2{ font:700 13.5pt/1.25 "Inter",sans-serif; margin:8mm 0 2.5mm; color:var(--ink);
+  break-after:avoid; padding-top:3mm; border-top:1px solid var(--line) }
+h2 .n{ font:500 9pt "IBM Plex Mono",monospace; color:var(--acc); margin-right:2mm; vertical-align:2px }
+h3{ font:650 11.5pt/1.3 "Inter",sans-serif; margin:5mm 0 1.5mm; color:var(--ink); break-after:avoid }
+p{ margin:0 0 2.6mm }
+strong{ color:var(--ink) }
+a{ color:var(--acc) }
+code{ font:.88em "IBM Plex Mono",monospace; background:var(--tec-bg); padding:.1em .35em; border-radius:3px }
+
+/* número em destaque */
+.numero{ display:flex; align-items:baseline; gap:4mm; background:var(--acc-soft);
+  border-radius:6px; padding:4mm 5mm; margin:3mm 0 5mm; break-inside:avoid }
+.numero b{ font:700 30pt/1 "Inter",sans-serif; color:var(--acc); letter-spacing:-.02em; white-space:nowrap }
+.numero span{ font-size:10.5pt; color:var(--ink-2); line-height:1.4 }
+.numeros{ display:grid; grid-template-columns:repeat(auto-fit,minmax(40mm,1fr)); gap:3mm; margin:3mm 0 5mm }
+.numeros .numero{ display:block; margin:0 }
+.numeros .numero b{ display:block; font-size:20pt; margin-bottom:1.5mm }
+
+/* resumo */
+.resumo{ background:#F7F9FB; border:1px solid var(--line); border-radius:6px; padding:4mm 5mm; margin:0 0 5mm }
+.resumo p:last-child{ margin:0 }
+
+/* caixas (a partir de > [!TIPO] no markdown) */
+.caixa{ border-left:4px solid; border-radius:0 6px 6px 0; padding:3mm 4.5mm; margin:3mm 0 4mm; break-inside:avoid }
+.caixa .rot{ font:600 7.5pt "IBM Plex Mono",monospace; letter-spacing:.14em; text-transform:uppercase; margin-bottom:1.2mm }
+.caixa p:last-child{ margin-bottom:0 }
+.caixa.achado{ border-color:var(--ach); background:var(--ach-bg) } .caixa.achado .rot{ color:var(--ach) }
+.caixa.decisao{ border-color:var(--dec); background:var(--dec-bg) } .caixa.decisao .rot{ color:var(--dec) }
+.caixa.tecnico{ border-color:var(--tec); background:var(--tec-bg); font-size:9.5pt } .caixa.tecnico .rot{ color:var(--tec) }
+.caixa.cuidado{ border-color:var(--cui); background:var(--cui-bg) } .caixa.cuidado .rot{ color:var(--cui) }
+.caixa.falha{ border-color:var(--fal); background:var(--fal-bg) } .caixa.falha .rot{ color:var(--fal) }
+
+/* figuras */
+figure,p>img:only-child{ margin:3mm 0 5mm; break-inside:avoid }
+img{ max-width:100%; height:auto; display:block; margin:0 auto; border-radius:4px }
+figcaption,.legenda{ font-size:9pt; color:var(--muted); margin-top:1.5mm; text-align:left }
+
+/* tabelas */
+table{ width:100%; border-collapse:collapse; margin:2mm 0 5mm; font-size:9pt; break-inside:auto }
+thead{ display:table-header-group }
+tr{ break-inside:avoid }
+th{ text-align:left; font:600 7.5pt "IBM Plex Mono",monospace; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); border-bottom:1.5px solid var(--ink); padding:1.8mm 2.5mm 1.8mm 0 }
+td{ border-bottom:1px solid var(--line); padding:1.8mm 2.5mm 1.8mm 0; vertical-align:top }
+
+/* veredito do tollgate */
+.ok,.ressalva,.falha-t{ font:600 7.5pt "IBM Plex Mono",monospace; padding:.6mm 2mm; border-radius:20px; white-space:nowrap }
+.ok{ background:var(--dec-bg); color:var(--dec) }
+.ressalva{ background:var(--cui-bg); color:var(--cui) }
+.falha-t{ background:var(--fal-bg); color:var(--fal) }
+
+/* bastidores: menor, no fim */
+.bastidores{ font-size:9pt; color:var(--ink-2) }
+ul,ol{ margin:0 0 3mm; padding-left:5mm } li{ margin-bottom:1mm }
+blockquote{ margin:3mm 0; padding-left:4mm; border-left:3px solid var(--line); color:var(--ink-2) }
+</style></head><body>
+<header class="cab"><div class="fase"></div><h1>Analyze: o que explica o gasto baixo em saúde por habitante</h1><div class="meta"><strong>Saúde fiscal do Rio de Janeiro · Siconfi 2024 (com replicação em 2023) · 24/10/2026</strong></div></header>
+<div class="caixa tecnico">
+<div class="rot">Detalhe técnico</div>
+<p>Dados públicos e declarados pelos entes, não auditados. Gasto em saúde por habitante não mede qualidade nem resultado em saúde. Toda conclusão abaixo vem com a sua ressalva.</p>
+</div>
+<div class="resumo">
+<p><strong>Pergunta central.</strong> O gasto baixo em saúde por habitante da Região Metropolitana se explica pela receita por habitante?</p>
+<p><strong>Resposta curta.</strong> Em boa parte sim: a receita por habitante sozinha explica cerca de 80% da variação do gasto entre as 92 cidades, e quando se compara cidades com a mesma receita a diferença da Metropolitana cai de 16% para 4%. Mas <strong>a amostra não permite concluir</strong> se sobra alguma diferença real (o intervalo vai de −18% a +11%), e o resultado depende de poucas cidades de receita muito alta. A capital é o caso que mais destoa: gasta bem menos do que a receita dela indica, principalmente por dedicar uma fatia menor da receita à saúde.</p>
+</div>
+<h2><span class="n">1</span>O que foi feito</h2>
+<table>
+<thead>
+<tr>
+<th>Etapa</th>
+<th>O que fez</th>
+<th>Script</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A0</td>
+<td>Hipóteses e critérios de decisão, escritos antes dos modelos (<a href="../../docs/09-analyze-hipoteses.md">docs/09</a>)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>A1</td>
+<td>Decomposição exata: gasto por habitante = receita por habitante × fatia da receita dedicada à saúde</td>
+<td><code>scripts/19</code></td>
+</tr>
+<tr>
+<td>A2</td>
+<td>Modelo em log nas 92 cidades (91 nos modelos de grupo), erros robustos HC3, bootstrap, ponderação por população, diagnóstico</td>
+<td><code>scripts/20</code></td>
+</tr>
+<tr>
+<td>A2b</td>
+<td>Sensibilidade às cidades de maior influência (distância de Cook)</td>
+<td><code>scripts/21</code></td>
+</tr>
+<tr>
+<td>A5</td>
+<td>Replicação com 2023 (coleta nova no Siconfi: 92 de 92 municípios)</td>
+<td><code>scripts/22</code>, <code>scripts/23</code></td>
+</tr>
+<tr>
+<td>Rodada 2</td>
+<td>Receita própria contra transferências (H6), domicílios de uso ocasional do Censo 2022 (H7), SIOPS (H8)</td>
+<td><code>scripts/24</code></td>
+</tr>
+<tr>
+<td>Conferência</td>
+<td>Notebook de reprodução com conferência dos números do relatório; planilha em Excel (A1, regressão, modelo M3 e previsão da capital)</td>
+<td><code>notebooks/03</code>, <code>scripts/25</code> a <code>27</code></td>
+</tr>
+</tbody>
+</table>
+<p>Cada método (o que é, por que foi escolhido, como foi feito, com exemplo) está em <a href="../../docs/10-metodos-estatisticos.md">docs/10</a>.</p>
+<div class="caixa cuidado">
+<div class="rot">Cuidado</div>
+<p><strong>Falha de ordem, declarada.</strong> O A1 foi rodado antes de eu mostrar o A0 ao responsável, e as hipóteses H3 e H5 foram escritas depois de eu ver o padrão do A1. O A0 diz isso no topo. A replicação em 2023 passou a ser o teste "cego", e a previsão para 2023 foi registrada antes de coletar. A H5 também foi reformulada: a primeira redação ("a fatia cai") era minha, não do responsável; a atual é neutra.</p>
+</div>
+<h2><span class="n">2</span>Resultados por hipótese</h2>
+<table>
+<thead>
+<tr>
+<th>Id</th>
+<th>Hipótese</th>
+<th>Resultado</th>
+<th>Veredito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1</td>
+<td>Com a mesma receita por habitante, a Metropolitana (sem a capital) não gasta diferente de forma relevante</td>
+<td>−4,4% (IC 95%: −18% a +12%) em 2024; −6,8% (−22% a +11%) em 2023. O intervalo passa da margem de ±10%</td>
+<td><strong>Sem conclusão</strong></td>
+</tr>
+<tr>
+<td>H2</td>
+<td>A Baixada (6 cidades) gasta menos que a receita prevê</td>
+<td>−3,5% (−18% a +14%); ponderado por população −8,2% (−33% a +25%); 2023: −7,9% (−28% a +17%)</td>
+<td><strong>Sem conclusão</strong></td>
+</tr>
+<tr>
+<td>H3</td>
+<td>A capital gasta menos por dedicar fatia menor da receita à saúde</td>
+<td>Gasto 35% a 37% abaixo do previsto pela receita total; fatia de 19,6%, contra mediana de 29,2%; contra a receita própria, 67% abaixo, fora do intervalo de previsão nos dois anos</td>
+<td><strong>Sustentada</strong>; com a receita total é limítrofe (2024 pouco fora do intervalo, 2023 dentro)</td>
+</tr>
+<tr>
+<td>H4</td>
+<td>O padrão de 2024 se repete em 2023</td>
+<td>Elasticidade 0,80; efeito da Metropolitana pequeno e incerto; capital abaixo do previsto; 9 dos 10 que menos gastam na Metropolitana (8 em 2024)</td>
+<td><strong>Confirmada</strong>, com a ressalva de que os dois anos não são amostras independentes</td>
+</tr>
+<tr>
+<td>H5</td>
+<td>Como se comportam as cidades de maior receita? (pergunta aberta; expectativa: fatia maior)</td>
+<td>Elasticidade 0,81 (0,72 a 0,90), abaixo de 1: <strong>quanto maior a receita por habitante, menor a fatia dedicada à saúde</strong>. Contra a expectativa inicial</td>
+<td><strong>Fatia menor</strong>; sensível a 3 cidades (0,89 sem elas)</td>
+</tr>
+<tr>
+<td>H6</td>
+<td>Receita própria acompanha menos o gasto que a receita total</td>
+<td>Própria sozinha: R² 0,35 e elasticidade 0,45; total: R² 0,80. Com as duas juntas: transferências 0,68, própria 0,12. 2023 igual</td>
+<td><strong>Confirmada</strong></td>
+</tr>
+<tr>
+<td>H7</td>
+<td>Uso ocasional infla a receita por habitante e explica parte do resíduo das Baixadas Litorâneas</td>
+<td>Correlação de postos com a receita por habitante +0,51 e com a fatia −0,44; resíduo mediano das Baixadas Litorâneas de −15% para −9%</td>
+<td><strong>Parcial</strong>: coeficiente com intervalo que encosta no zero</td>
+</tr>
+<tr>
+<td>H8</td>
+<td>A maioria cumpre o mínimo de 15% e o gasto baixo não vem de aplicar pouco</td>
+<td>92 de 92 acima de 15% (mediana 23,3%); as 10 que menos gastam aplicam mediana de 20,9%</td>
+<td><strong>Confirmada</strong></td>
+</tr>
+</tbody>
+</table>
+<h3>2.1 Decomposição (A1)</h3>
+<p>A referência é a média geométrica das 92 cidades: R$ 2.322 de gasto por habitante, R$ 7.983 de receita por habitante e fatia de 29,1%. Em log, o desvio do gasto é a soma do desvio da receita e do desvio da fatia (conferido nas 92 cidades).</p>
+<table>
+<thead>
+<tr>
+<th>Grupo (mediana do desvio, %)</th>
+<th>n</th>
+<th>Gasto</th>
+<th>Receita</th>
+<th>Fatia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baixada (núcleo de 6)</td>
+<td>6</td>
+<td>−52</td>
+<td>−58</td>
+<td>+18</td>
+</tr>
+<tr>
+<td>Capital</td>
+<td>1</td>
+<td>−51</td>
+<td>−27</td>
+<td>−33</td>
+</tr>
+<tr>
+<td>Metropolitana (resto)</td>
+<td>15</td>
+<td>−16</td>
+<td>−21</td>
+<td>+8</td>
+</tr>
+<tr>
+<td>Baixadas Litorâneas</td>
+<td>10</td>
+<td>+23</td>
+<td>+56</td>
+<td>−20</td>
+</tr>
+<tr>
+<td>Costa Verde</td>
+<td>3</td>
+<td>+47</td>
+<td>+61</td>
+<td>−1</td>
+</tr>
+</tbody>
+</table>
+<p>Leitura: Baixada e Metropolitana gastam pouco principalmente por receita baixa. A capital é diferente: a receita dela fica 27% abaixo da referência, mas a fatia fica 33% abaixo. Por grupo as medianas não fecham exatamente (a mediana de uma soma não é a soma das medianas); por cidade a conta é exata.</p>
+<h3>2.2 Sensibilidade (A2b)</h3>
+<p>Seis cidades têm distância de Cook acima de 4/n: Niterói, Maricá, Saquarema, Rio Bonito, São Pedro da Aldeia e Duque de Caxias. A conferência da DCA contra o RREO fecha para elas (não são erros de dado). Isso mostra que a conclusão sobre a Metropolitana é sensível a três cidades de receita muito alta, e não que a região seja pequena demais.</p>
+<table>
+<thead>
+<tr>
+<th>Versão</th>
+<th>Elasticidade</th>
+<th>Resto da Metropolitana</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Todas (91)</td>
+<td>0,79</td>
+<td>−4,4% (−18% a +12%)</td>
+</tr>
+<tr>
+<td>Sem as 6 (85)</td>
+<td>0,86 (0,76 a 0,96)</td>
+<td>+1,2% (−8% a +12%)</td>
+</tr>
+<tr>
+<td>Sem Niterói, Maricá e Saquarema (88)</td>
+<td>0,89 (0,79 a 0,996)</td>
+<td>+6,6% (−5% a +19%)</td>
+</tr>
+</tbody>
+</table>
+<p>A "lacuna da Metropolitana" desaparece sem essas cidades, e a elasticidade sobe para perto de 1.</p>
+<h3>2.3 Receita própria e transferências (H6)</h3>
+<p>Receita própria = receita total menos transferências correntes e de capital (RREO Anexo 01).</p>
+<ul>
+<li>Quase todas as regiões têm 17% a 25% da receita como própria; a capital, 66%.</li>
+<li>No modelo com as duas juntas, o gasto em saúde por habitante acompanha as <strong>transferências</strong> (0,68) e muito pouco a receita própria (0,12).</li>
+<li>Mesmo contra a receita própria, a capital gasta 67% abaixo do previsto (2024) e 66% (2023).</li>
+<li><strong>Ressalva:</strong> as transferências incluem os repasses do SUS (carimbados para a saúde), então parte dessa relação é automática. Royalties e compensações financeiras entram em transferências e não se separam nos dados.</li>
+</ul>
+<h3>2.4 Uso ocasional (H7)</h3>
+<p>Domicílios de uso ocasional por 100 moradores (Censo 2022): Baixadas Litorâneas 20 (mediana), Costa Verde 16,5, Baixada núcleo 0,2. Mangaratiba 58, Arraial do Cabo 41, São João da Barra 38. A hipótese de que cidades de veraneio têm receita inflada por uma base que não mora lá é plausível e explica parte do desvio, mas não o fecha. O Censo é de 2022 e o gasto de 2024.</p>
+<h3>2.5 SIOPS (H8)</h3>
+<p>Todas as 92 cidades declaram aplicar mais que o mínimo de 15% (menor valor: Paracambi, 15,1%; Mesquita, 15,2%). Correlação entre o percentual aplicado e o gasto por habitante: +0,15, sem evidência. Os recursos próprios do SIOPS cobrem cerca de 37% (mediana) do gasto em saúde do Siconfi, 21% na Baixada (núcleo de 6) e 50% na capital (bases diferentes; é ordem de grandeza).</p>
+<h2><span class="n">3</span>Achado para auditoria</h2>
+<div class="caixa achado">
+<div class="rot">Achado</div>
+<p><strong>Baixadas Litorâneas gastam 13% a 15% menos do que a receita prevê, nos dois anos (2023 e 2024).</strong> Os dados não explicam. O uso ocasional reduz o desvio para −9% mas não o elimina. Pode haver explicação legítima (por exemplo, gasto em saúde registrado em outro ente ou fundo, ou escolha de prioridade). Fica na lista para quem tem acesso aos livros: controladoria ou tribunal de contas.</p>
+</div>
+<h2><span class="n">4</span>Limites e ressalvas</h2>
+<ul>
+<li>Dados declarados, não auditados; o gasto é empenhado, não pago.</li>
+<li>Gasto em saúde por habitante residente não mede qualidade nem necessidade; a capital e as cidades-polo atendem quem mora em outro município.</li>
+<li>A população de 2023 é aproximada (média geométrica entre o Censo 2022 e a estimativa de 2024, porque o IBGE não publicou estimativa municipal de 2023).</li>
+<li>Carmo ficou fora da replicação de 2023 (entregou o RREO só até o 5º bimestre).</li>
+<li>Os dois anos usam as mesmas 92 cidades, então não são amostras independentes.</li>
+<li>Regiões pequenas (capital, n=1; Baixada, n=6) só se descrevem; o intervalo largo significa "sem conclusão", e não "sem diferença".</li>
+<li>Pendências herdadas: B4 (versão que a API devolve para relatório retificado) e módulos IBGE/SUS e DF no SIOPS (D1, D2).</li>
+<li><strong>Reprodução e conferência:</strong> o notebook <code>notebooks/03_analyze_gasto_saude.ipynb</code> refaz todos os cálculos e confere 47 números deste relatório contra a execução (0 divergências). A planilha <code>planilhas/saude_fiscal_rj_analyze.xlsx</code> refaz em fórmulas de Excel a decomposição, a regressão simples, o modelo M3 (com a Baixada e o resto da Metropolitana) e a previsão da capital com o intervalo de previsão (1.778 fórmulas, 0 erros, 0 diferenças contra o Python; o intervalo da capital sai igual: R$ 1.144 a R$ 2.668). Ficam só no notebook os erros robustos HC3, o bootstrap, a ponderação por população e os modelos de receita própria.</li>
+<li><strong>Não foi feito:</strong> gráficos finais (ficam para a página de entrega); royalties por município (ANP) e atividade econômica (extensão futura).</li>
+</ul>
+<h2><span class="n">5</span>Decisões tomadas na fase</h2>
+<table>
+<thead>
+<tr>
+<th>Decisão</th>
+<th>Por quê</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Testar as 92 cidades juntas, com a região como variável</td>
+<td>Região é agregado de cidades; um modelo único aproveita todos os dados</td>
+</tr>
+<tr>
+<td>Capital fora do modelo como variável própria; prevista de fora</td>
+<td>Uma variável para uma cidade só "decora" a cidade e não testa nada</td>
+</tr>
+<tr>
+<td>Margem de relevância de ±10% e intervalo de 95%</td>
+<td>Escolha de julgamento, fixada antes de ver os resultados</td>
+</tr>
+<tr>
+<td>HC3 e bootstrap das cidades em vez de erros agrupados por região</td>
+<td>Com 8 regiões, o agrupamento fica instável</td>
+</tr>
+<tr>
+<td>H5 reformulada como pergunta neutra</td>
+<td>A primeira redação foi minha e não pedida</td>
+</tr>
+</tbody>
+</table>
+<h2><span class="n">6</span>Tollgate</h2>
+<p><strong>Proposta: APROVADO.</strong> O critério do tollgate é a qualidade do processo, e não se as hipóteses deram a resposta esperada. Aqui: hipóteses e critérios escritos antes; replicação em outro ano; sensibilidade; diagnóstico dos modelos; notebook que confere os números do relatório; planilha independente; falhas de ordem declaradas. Resultado "sem conclusão" e hipótese não confirmada são resultados válidos e entram como tal; viram perguntas para a fase seguinte e para trabalhos futuros.</p>
+<p><strong>Pendências herdadas (não são da fase):</strong> B4 (qual versão a API devolve para relatório retificado) e os módulos IBGE/SUS e DF no SIOPS (D1, D2).</p>
+<p><strong>Perguntas abertas que o Analyze deixa:</strong></p>
+<ul>
+<li>O que explica o gasto 13% a 15% abaixo da receita nas Baixadas Litorâneas, além do uso ocasional? Pergunta para quem acessa os livros.</li>
+<li>Sobra alguma diferença real da Metropolitana depois de descontar a receita? Com 15 cidades o intervalo é largo (−18% a +11%); repetir a pergunta nas regiões metropolitanas de outros estados (o Siconfi cobre todos) aumentaria o número de cidades.</li>
+<li>O quanto da receita alta de Maricá, Saquarema e outras vem de royalties? Exige o dado por município da ANP.</li>
+</ul>
+<p>A decisão é do responsável.</p>
+<p><strong>Insumos para a página de entrega:</strong> <a href="../../docs/08-banco-de-curiosidades.md">docs/08</a> (curiosidades por uso) e <a href="../../docs/05-insights-do-projeto.md">docs/05</a> (insights com ressalva). A seleção do que entra na página e no relatório final fica para a montagem.</p>
+</body></html>

@@ -6,7 +6,7 @@
 | 1 · Define | concluída | declaração do problema aprovada | [docs/01](../docs/01-define-relatorio.md) | 22/10/2026 |
 | 2A · Measure, o instrumento | concluída | APROVADO COM RESSALVA | [relatório](fase-2a-measure-qualidade/relatorio.pdf) | 23/10/2026 |
 | 2B · Measure, o processo | concluída | APROVADO COM RESSALVA | [relatório](fase-2b-measure-baseline/relatorio.pdf) | 23/10/2026 |
-| 3 · Analyze | não iniciada | — | — | — |
+| 3 · Analyze | concluída | APROVADO | [relatório](fase-3-analyze/relatorio.pdf) | 24/10/2026 |
 | 4 · Improve | não iniciada | — | — | — |
 | 5 · Control | não iniciada | — | — | — |
 
