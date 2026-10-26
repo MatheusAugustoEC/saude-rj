@@ -1,0 +1,38 @@
+Recorte de 2025: 86 cidades; excluídas (6): [('São Francisco de Itabapoana', 5, False), ('Magé', 5, False), ('Miracema', 6, False), ('Volta Redonda', 6, False), ('Mendes', 2, False), ('Carmo', 6, False)]
+DCA entregue depois de 31/08/2026 ('recente'): 4: ['Mesquita', 'Seropédica', 'Campos dos Goytacazes', 'Angra dos Reis']
+Cidades por grupo: {'Metropolitana (resto, 15)': 14, 'Serrana': 12, 'Noroeste Fluminense': 12, 'Baixadas Litorâneas': 10, 'Centro-Sul Fluminense': 10, 'Médio Paraíba': 10, 'Norte Fluminense': 8, 'Baixada (núcleo de 6)': 6, 'Costa Verde': 3, 'Capital': 1}
+
+################ TODAS as cidades do recorte: 86 cidades (85 sem a capital) ################
+K1 elasticidade da receita 0.741 [0.628; 0.855] -> sustenta
+K2 Resto da Metropolitana -7.2% [-20.7%; +8.6%] -> sustenta   (Baixada -15.1% [-33.0%; +7.6%])
+K3 capital: real R$ 1152; previsto R$ 1732 [R$ 1135; R$ 2643]; -33.5%; fora do intervalo: False -> sustenta
+K4 repasses 0.667, própria 0.113; R2 própria sozinha 0.397, total 0.816 -> sustenta
+K5 Niterói/São Pedro da Aldeia/capital fora do intervalo em 2025: [('3303302', True), ('3305208', False), ('3304557', False)]; repetem 1 de 3; Spearman dos resíduos 2024 x 2025 +0.83 (n=86) -> enfraquece
+   fora do intervalo em 2025: [['Niterói', -43.8], ['Araruama', -33.3]]
+K6 dispersão região 0.390; pares 0.211; redução 46% -> sustenta
+K7 ano a ano (n=85) repasses 0.591 [0.268; 0.915], própria -0.010; entre cidades 0.667 [0.560; 0.774] -> sustenta
+K8 resíduo mediano das Baixadas Litorâneas -15.6% (n=10) -> sustenta
+K9 resíduo mediano das Baixadas Litorâneas com 0/1/2/3 visitantes: [np.float64(-15.6), np.float64(-17.5), np.float64(-18.6), np.float64(-18.8)] -> sustenta
+
+################ SEM as DCAs 'recentes': 82 cidades (81 sem a capital) ################
+K1 elasticidade da receita 0.743 [0.626; 0.859] -> sustenta
+K2 Resto da Metropolitana -6.6% [-21.0%; +10.4%] -> sustenta   (Baixada -12.8% [-33.5%; +14.3%])
+K3 capital: real R$ 1152; previsto R$ 1735 [R$ 1126; R$ 2673]; -33.6%; fora do intervalo: False -> sustenta
+K4 repasses 0.667, própria 0.102; R2 própria sozinha 0.379, total 0.807 -> sustenta
+K5 Niterói/São Pedro da Aldeia/capital fora do intervalo em 2025: [('3303302', True), ('3305208', False), ('3304557', False)]; repetem 1 de 3; Spearman dos resíduos 2024 x 2025 +0.82 (n=82) -> enfraquece
+   fora do intervalo em 2025: [['Niterói', -44.1]]
+K6 dispersão região 0.395; pares 0.193; redução 51% -> sustenta
+K7 ano a ano (n=81) repasses 0.613 [0.199; 1.027], própria -0.022; entre cidades 0.667 [0.558; 0.777] -> sustenta
+K8 resíduo mediano das Baixadas Litorâneas -15.2% (n=10) -> sustenta
+K9 resíduo mediano das Baixadas Litorâneas com 0/1/2/3 visitantes: [np.float64(-15.2), np.float64(-17.1), np.float64(-18.2), np.float64(-18.4)] -> sustenta
+
+================ CLASSIFICAÇÃO FINAL (a pior das duas leituras) ================
+K1: todas = sustenta   | sem recentes = sustenta   | FINAL = sustenta
+K2: todas = sustenta   | sem recentes = sustenta   | FINAL = sustenta
+K3: todas = sustenta   | sem recentes = sustenta   | FINAL = sustenta
+K4: todas = sustenta   | sem recentes = sustenta   | FINAL = sustenta
+K5: todas = enfraquece | sem recentes = enfraquece | FINAL = enfraquece
+K6: todas = sustenta   | sem recentes = sustenta   | FINAL = sustenta
+K7: todas = sustenta   | sem recentes = sustenta   | FINAL = sustenta
+K8: todas = sustenta   | sem recentes = sustenta   | FINAL = sustenta
+K9: todas = sustenta   | sem recentes = sustenta   | FINAL = sustenta

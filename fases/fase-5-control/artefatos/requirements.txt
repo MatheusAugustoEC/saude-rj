@@ -1,0 +1,13 @@
+# Ambiente usado nas contas do projeto (Python 3.11). Versões fixadas para refazer os mesmos números.
+pandas==2.3.3
+numpy==2.3.3
+scipy==1.16.2
+statsmodels==0.14.6
+matplotlib==3.10.6
+shapely==2.1.2
+openpyxl==3.1.5
+pytest==9.1.1
+# Só para gerar os notebooks e os PDFs das fases (não são necessários para refazer as contas nem para os testes):
+nbformat==5.10.4
+nbconvert==7.16.6
+markdown==3.11

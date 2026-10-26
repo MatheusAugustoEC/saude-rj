@@ -1,0 +1,121 @@
+Cidades: 2024 = 92; 2023 = 91 (fora de 2023: ['Carmo'])
+
+=== R1: triagem (deixa-uma-fora, intervalo de previsão de 95%) ===
+Abaixo do intervalo em 2024: 4; em 2023: 3; sinalizadas pela regra (fora em 2024 e resíduo negativo em 2023): 4
+                                 ente                      grupo  res_pct_24  fora_ic_24  res_pct_23 fora_ic_23
+cod_ibge                                                                                                       
+3303302                       Niterói  Metropolitana (resto, 15)       -47.7        True       -49.0       True
+3304755   São Francisco de Itabapoana           Norte Fluminense       -42.6        True       -41.7       True
+3305208           São Pedro da Aldeia        Baixadas Litorâneas       -36.7        True       -28.4      False
+3304557                Rio de Janeiro                    Capital       -35.0        True       -32.7      False
+3303856               Paty do Alferes      Centro-Sul Fluminense       -16.5       False       -38.5       True
+Sinalizadas por grupo: {'Baixadas Litorâneas': 1, 'Capital': 1, 'Norte Fluminense': 1, 'Metropolitana (resto, 15)': 1} | total de cada grupo: {'Metropolitana (resto, 15)': 15, 'Serrana': 13, 'Noroeste Fluminense': 13, 'Médio Paraíba': 11, 'Centro-Sul Fluminense': 11, 'Baixadas Litorâneas': 10, 'Norte Fluminense': 9, 'Baixada (núcleo de 6)': 6, 'Costa Verde': 3, 'Capital': 1}
+Retroteste: fora em 2023 (linhas) x fora em 2024 (colunas)
+ fora_ic_24  False  True 
+fora_ic_23              
+False          86      2
+True            1      2
+  entre as 3 fora em 2023, 2 (67%) repetem em 2024; taxa-base de 2024: 4%; Fisher unilateral p=0.0043
+Persistência do resíduo (Spearman 2023 x 2024): +0.77 (p=0.0000)
+Cenários de adesão (parcela das sinalizadas sem explicação legítima): achados esperados e desvio em R$ das sinalizadas
+  pessimista p=20%: 0.8 cidades com achado; desvio total das sinalizadas R$ 5,019.5 milhões (soma do que a receita prevê a mais; não é ganho)
+  provável   p=50%: 2.0 cidades com achado; desvio total das sinalizadas R$ 5,019.5 milhões (soma do que a receita prevê a mais; não é ganho)
+  otimista   p=80%: 3.2 cidades com achado; desvio total das sinalizadas R$ 5,019.5 milhões (soma do que a receita prevê a mais; não é ganho)
+Ponto de indiferença p* = 1/v: {'v=2': '50%', 'v=5': '20%', 'v=10': '10%'}
+Teste: com 4 sinalizadas e 4 controles, poder 80%, nível 5%, taxa-base de achado de 20%, só se detecta taxa de 99% ou mais; para distinguir 20% de 50% seriam necessárias 38 cidades por grupo
+
+=== R2: pares por receita contra a região ===
+Desvio absoluto médio do log do gasto por habitante em relação à mediana do grupo (sem a própria cidade), 92 cidades: região = 0.372; pares = 0.200; redução de 46%
+Placebo (5 grupos sorteados com os mesmos tamanhos, 2.000 vezes): desvio médio 0.388 (5º percentil 0.365); o dos pares (0.200) fica abaixo do 5º percentil
+Desvio mediano (%) em relação à região e em relação aos pares, por grupo:
+                           dev_reg  dev_par   n
+grupo                                          
+Baixada (núcleo de 6)        -32.6    -14.8   6
+Capital                      -30.9    -42.1   1
+Norte Fluminense              -6.6     17.0   9
+Médio Paraíba                 -2.8     18.8  11
+Costa Verde                   -1.9     -1.2   3
+Noroeste Fluminense           -0.6      5.7  13
+Serrana                       -0.5     -6.3  13
+Baixadas Litorâneas            1.5     -6.5  10
+Centro-Sul Fluminense         12.4    -12.8  11
+Metropolitana (resto, 15)     27.3      2.1  15
+Tamanho das 8 regiões: {'Metropolitana': 22, 'Serrana': 13, 'Noroeste Fluminense': 13, 'Médio Paraíba': 11, 'Centro-Sul Fluminense': 11, 'Baixadas Litorâneas': 10, 'Norte Fluminense': 9, 'Costa Verde': 3}
+Cidades cuja leitura muda de sinal (abaixo/acima da mediana do grupo) ao trocar região por pares: 34 de 92
+Limite: agrupar por receita explica o gasto em boa parte por construção (gasto = receita × fatia); o ganho é de leitura para o gestor, não de causa.
+
+=== R3: ajuste da base nas cidades de veraneio ===
+Resíduo mediano (%) por grupo, conforme o número de não residentes por domicílio de uso ocasional:
+ pessoas_por_domicilio_ocasional  Baixadas Litorâneas  Costa Verde  Metropolitana (resto, 15)  Baixada (núcleo de 6)
+                               0                -15.0          5.0                        5.4                   -2.4
+                               1                -16.8          3.3                        6.1                   -2.2
+                               2                -17.9          1.9                        5.8                   -1.9
+                               3                -18.2          0.8                        5.2                   -1.5
+Ponto de indiferença: resíduo mediano das Baixadas Litorâneas chega a zero com None pessoas por domicílio de uso ocasional (limite plausível definido antes: 3)
+Resíduo em ±5% em algum cenário de 0 a 3? False
+
+=== R4: teste de estresse dos repasses ===
+Primeiras diferenças 2023→2024: 91 cidades com o mesmo bimestre nos dois anos
+  com a capital (n=91, R2=0.035): Δln(repasses) 0.285 [0.005; 0.565]; Δln(própria) 0.018 [-0.124; 0.161]
+  sem a capital (n=90, R2=0.035): Δln(repasses) 0.284 [0.004; 0.565]; Δln(própria) 0.019 [-0.124; 0.161]
+Corte transversal 2024 (referência H6): elasticidade dos repasses 0.677 [0.573; 0.782]
+Critério: coeficiente em primeiras diferenças positivo com intervalo sem zero? SIM, o teste de estresse vale
+Cenários (queda dos repasses; gasto em saúde cai pela elasticidade do corte transversal; pior caso = limite superior, melhor = limite inferior):
+  repasses −10% | otimista   (b=0.57): gasto em saúde -5.9% = R$ -1,630 milhões nas 92 cidades
+  repasses −10% | provável   (b=0.68): gasto em saúde -6.9% = R$ -1,918 milhões nas 92 cidades
+  repasses −10% | pessimista (b=0.78): gasto em saúde -7.9% = R$ -2,203 milhões nas 92 cidades
+  repasses −20% | otimista   (b=0.57): gasto em saúde -12.0% = R$ -3,340 milhões nas 92 cidades
+  repasses −20% | provável   (b=0.68): gasto em saúde -14.0% = R$ -3,907 milhões nas 92 cidades
+  repasses −20% | pessimista (b=0.78): gasto em saúde -16.0% = R$ -4,460 milhões nas 92 cidades
+  repasses −30% | otimista   (b=0.57): gasto em saúde -18.5% = R$ -5,144 milhões nas 92 cidades
+  repasses −30% | provável   (b=0.68): gasto em saúde -21.5% = R$ -5,977 milhões nas 92 cidades
+  repasses −30% | pessimista (b=0.78): gasto em saúde -24.3% = R$ -6,780 milhões nas 92 cidades
+Cenários com a elasticidade de ano a ano (primeiras diferenças, sem a capital; o limite inferior encosta no zero):
+  repasses −10% | otimista   (b=0.004): gasto em saúde -0.0% = R$ -11 milhões
+  repasses −10% | provável   (b=0.284): gasto em saúde -3.0% = R$ -822 milhões
+  repasses −10% | pessimista (b=0.565): gasto em saúde -5.8% = R$ -1,608 milhões
+  repasses −20% | otimista   (b=0.004): gasto em saúde -0.1% = R$ -24 milhões
+  repasses −20% | provável   (b=0.284): gasto em saúde -6.1% = R$ -1,712 milhões
+  repasses −20% | pessimista (b=0.565): gasto em saúde -11.8% = R$ -3,297 milhões
+  repasses −30% | otimista   (b=0.004): gasto em saúde -0.1% = R$ -39 milhões
+  repasses −30% | provável   (b=0.284): gasto em saúde -9.6% = R$ -2,685 milhões
+  repasses −30% | pessimista (b=0.565): gasto em saúde -18.2% = R$ -5,080 milhões
+Indiferença com a elasticidade de ano a ano: provável 31.0%; pessimista 17.0%; otimista: o intervalo toca o zero, não há queda que leve a −10%
+Ponto de indiferença: queda de repasses que reduz o gasto em 10%: 14.4% (provável); 12.6% (pessimista); 16.8% (otimista)
+Exposição (parte da receita que vem de repasses), mediana por grupo (%): {'Norte Fluminense': 83.0, 'Centro-Sul Fluminense': 82.0, 'Serrana': 82.0, 'Noroeste Fluminense': 81.0, 'Metropolitana (resto, 15)': 80.0, 'Baixadas Litorâneas': 78.0, 'Baixada (núcleo de 6)': 77.0, 'Médio Paraíba': 75.0, 'Costa Verde': 69.0, 'Capital': 34.0}
+Cidades mais dependentes de repasses: [['Rio das Flores', 92.0], ['Santa Maria Madalena', 92.0], ['Engenheiro Paulo de Frontin', 92.0], ['São Francisco de Itabapoana', 92.0], ['Macuco', 90.0], ['Carapebus', 90.0]]
+
+=== R5: folga sobre o mínimo de 15% (SIOPS 2024) ===
+Cidades com valor abaixo do mínimo: 0
+Dez menores folgas:
+                       ente                     grupo  aplicado_pct  folga_pp  folga_rs  folga_hab  queda_zera_pct
+                  Paracambi Metropolitana (resto, 15)          15.1       0.1  100826.1        2.3             0.6
+Engenheiro Paulo de Frontin     Centro-Sul Fluminense          15.1       0.1   87436.8        6.9             1.0
+                   Mesquita     Baixada (núcleo de 6)          15.2       0.2  476280.7        2.7             1.2
+                       Magé Metropolitana (resto, 15)          15.3       0.3  896230.5        3.7             1.8
+      São Sebastião do Alto                   Serrana          15.4       0.3  188702.6       23.6             2.3
+             Miguel Pereira     Centro-Sul Fluminense          15.5       0.5  532828.2       18.9             3.5
+                 Natividade       Noroeste Fluminense          15.7       0.7  392576.8       25.2             4.2
+                Barra Mansa             Médio Paraíba          16.6       1.6 5813769.7       32.0             9.5
+                     Tanguá Metropolitana (resto, 15)          16.6       1.6 1417119.7       43.1             9.8
+                  Três Rios     Centro-Sul Fluminense          16.8       1.9 4346866.9       52.8            11.0
+Sinalizadas (folga abaixo de 3 pp): 18: ['Mesquita', 'Rio de Janeiro', 'Barra Mansa', 'Magé', 'Niterói', 'Três Rios', 'Tanguá', 'Paracambi', 'Natividade', 'Cachoeiras de Macacu', 'Comendador Levy Gasparian', 'Miguel Pereira', 'São Sebastião do Alto', 'Engenheiro Paulo de Frontin', 'Mangaratiba', 'Vassouras', 'Saquarema', 'Maricá']
+Folga mediana: 8.3 pp; R$ 328 por habitante
+Descritivo, fora do critério fixado: folga abaixo de 1 pp em 7 cidades: ['Mesquita', 'Magé', 'Paracambi', 'Natividade', 'Miguel Pereira', 'São Sebastião do Alto', 'Engenheiro Paulo de Frontin']
+Capital e Niterói: [['Rio de Janeiro', 17.8, 2.8, 596064154.2, 15.7], ['Niterói', 16.9, 1.9, 46700982.4, 11.0]]
+
+=== R6: reconciliação Siconfi x SIOPS ===
+Razão recursos próprios do SIOPS ÷ gasto em saúde do Siconfi: mediana 0.37; quartis 0.26 a 0.48 (amplitude 0.22); mín 0.13; máx 0.74
+Critério: amplitude entre os quartis acima de 0,30? NÃO
+Fora de mediana ± 2 desvios absolutos (0.22): 11 cidades: ['Magé', 'Rio das Ostras', 'São José do Vale do Rio Preto', 'Sapucaia', 'Itaguaí', 'Santa Maria Madalena', 'Itatiaia', 'Macaé', 'Angra dos Reis', 'Vassouras', 'Porto Real']
+Razão acima de 1 (próprios do SIOPS maiores que o gasto do Siconfi): 0: []
+Cruzamento R6 x R1: fora da faixa na R6 e sinalizadas na R1: []; sinalizadas na R1 = ['Niterói', 'Rio de Janeiro', 'São Francisco de Itabapoana', 'São Pedro da Aldeia']
+
+=== R7: painel de limites da LRF (descritivo) ===
+Municípios: acima do limite prudencial de pessoal: 22 (acima do máximo: 11); dívida a partir de 80% do limite (96% da RCL): 0; restos a pagar no quartil superior (≥ 4.5% da receita): 23
+Acima do prudencial: [['Areal', 154.2, 51.3, 54.0, 'RCL atípica'], ['Cabo Frio', 63.3, 51.3, 54.0, nan], ['Cambuci', 51.3, 51.3, 54.0, nan], ['Cantagalo', 51.8, 51.3, 54.0, nan], ['Engenheiro Paulo de Frontin', 61.2, 51.3, 54.0, nan], ['Itaguaí', 60.2, 51.3, 54.0, nan], ['Itaocara', 52.8, 51.3, 54.0, nan], ['Itaperuna', 135.2, 51.3, 54.0, 'RCL atípica'], ['Itatiaia', 52.1, 51.3, 54.0, nan], ['Mangaratiba', 53.1, 51.3, 54.0, nan], ['Miracema', 122.3, 51.3, 54.0, 'RCL atípica'], ['Nova Friburgo', 52.2, 51.3, 54.0, nan], ['Paty do Alferes', 51.8, 51.3, 54.0, nan], ['Porciúncula', 53.5, 51.3, 54.0, nan], ['Rio das Ostras', 54.2, 51.3, 54.0, nan], ['São Francisco de Itabapoana', 53.2, 51.3, 54.0, nan], ['São João de Meriti', 54.2, 51.3, 54.0, nan], ['São Sebastião do Alto', 60.6, 51.3, 54.0, nan], ['Seropédica', 63.8, 51.3, 54.0, nan], ['Sumidouro', 54.6, 51.3, 54.0, nan], ['Trajano de Moraes', 52.7, 51.3, 54.0, nan], ['Valença', 51.7, 51.3, 54.0, nan]]
+Dívida a partir de 80% do limite: []
+Maiores restos a pagar sobre a receita: [['Rio Bonito', 28.6], ['Barra do Piraí', 20.4], ['Carapebus', 17.4], ['São João de Meriti', 17.2], ['Miguel Pereira', 16.1]]
+Entes com sinalizador especial no Measure (marcados, não retirados): [['Areal', 'RCL atípica'], ['Armação dos Búzios', 'totais de despesa inconsistentes'], ['Itaperuna', 'RCL atípica'], ['Miracema', 'RCL atípica']]
+Dívida líquida: mediana -5.6% da RCL; entes com dívida líquida negativa (credores líquidos): 53
+Estado do RJ: pessoal 46.8% da RCL (prudencial 46.5%, máximo 49.0%); dívida líquida 211.3% da RCL (limite 200%); restos a pagar 0.6% da receita

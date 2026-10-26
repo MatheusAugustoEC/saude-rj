@@ -1,0 +1,31 @@
+{
+  "_leia_me": "Parâmetros fixados do projeto, com a fase e o documento de origem. Os testes (tests/) leem este arquivo. Os scripts novos podem lê-lo; os scripts congelados de fases anteriores mantêm as mesmas constantes dentro do código, listadas aqui como referência.",
+  "n_municipios": 92,
+  "n_estados": 26,
+  "populacao_min": 3000,
+  "populacao_max": 7000000,
+  "gasto_hab_min": 800,
+  "gasto_hab_max": 7000,
+  "variacao_populacao_max": 0.10,
+  "elasticidade_min": 0.70,
+  "elasticidade_max": 0.92,
+  "minimo_cidades_dca": {"2023": 85, "2025": 85},
+  "minimo_cidades_rreo": {"2023": 85, "2025": 85},
+  "referencia_dos_scripts_congelados": {
+    "intervalo_de_confianca": 0.95,
+    "margem_de_relevancia_pct": 10,
+    "semente": 20261024,
+    "estimador_de_erro": "HC3",
+    "limiar_folga_atencao_pp": 3,
+    "limiar_folga_alta_pp": 1,
+    "limiar_pares_reducao": 0.20,
+    "limiar_estresse_repasses_pct": [10, 20, 30],
+    "limiar_dca_recente": "2026-08-31",
+    "fonte": "docs/09, docs/13 e docs/14"
+  },
+  "gatilho_de_revisao_da_triagem": {
+    "elasticidade_faixa": [0.60, 0.95],
+    "r2_minimo": 0.70,
+    "fonte": "docs/15"
+  }
+}

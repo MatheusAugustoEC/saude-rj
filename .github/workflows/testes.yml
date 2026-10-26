@@ -1,0 +1,21 @@
+name: Testes do dado
+
+# Roda os testes automáticos do dado (C7) a cada mudança no repositório e uma vez por mês.
+# Não usa a internet para buscar dado novo e não publica nada: só avisa se alguma conferência quebrou.
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 9 1 * *"
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m pytest tests -q

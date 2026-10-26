@@ -1,0 +1,536 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>/* Estilo dos relatórios de fase — metodo-dmaic.
+   Usado por gerar_pdf.py. O destaque (--acc) pode ser trocado por projeto. */
+:root{
+  --acc:#2F5D8A; --acc-soft:#E8EFF6;
+  --ink:#1B2430; --ink-2:#44505E; --muted:#6B7785; --line:#DCE2E8; --paper:#FFFFFF;
+  --ach:#2F5D8A;  --ach-bg:#EAF1F8;   /* achado */
+  --dec:#2E7D5B;  --dec-bg:#E9F5EF;   /* decisão */
+  --tec:#5B6573;  --tec-bg:#F2F4F6;   /* detalhe técnico */
+  --cui:#B26B00;  --cui-bg:#FFF4E0;   /* cuidado / limitação */
+  --fal:#B3261E;  --fal-bg:#FCEBEA;   /* falha */
+}
+@page{ size:A4; margin:18mm 17mm 20mm }   /* rodapé com projeto e página: gerar_pdf.py */
+*{ box-sizing:border-box }
+html{ -webkit-print-color-adjust:exact; print-color-adjust:exact }
+body{ margin:0; background:var(--paper); color:var(--ink);
+  font:10.5pt/1.55 "Inter","Segoe UI",system-ui,sans-serif; hyphens:auto }
+
+/* cabeçalho */
+.cab{ border-left:4px solid var(--acc); padding:2mm 0 2mm 5mm; margin-bottom:6mm }
+.cab .fase{ font:600 8pt "IBM Plex Mono",monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--acc) }
+.cab .meta{ font-size:8.5pt; color:var(--muted); margin-top:1mm }
+h1{ font:700 20pt/1.18 "Inter",sans-serif; letter-spacing:-.01em; margin:1.5mm 0 0 }
+
+/* títulos-mensagem */
+h2{ font:700 13.5pt/1.25 "Inter",sans-serif; margin:8mm 0 2.5mm; color:var(--ink);
+  break-after:avoid; padding-top:3mm; border-top:1px solid var(--line) }
+h2 .n{ font:500 9pt "IBM Plex Mono",monospace; color:var(--acc); margin-right:2mm; vertical-align:2px }
+h3{ font:650 11.5pt/1.3 "Inter",sans-serif; margin:5mm 0 1.5mm; color:var(--ink); break-after:avoid }
+p{ margin:0 0 2.6mm }
+strong{ color:var(--ink) }
+a{ color:var(--acc) }
+code{ font:.88em "IBM Plex Mono",monospace; background:var(--tec-bg); padding:.1em .35em; border-radius:3px }
+
+/* número em destaque */
+.numero{ display:flex; align-items:baseline; gap:4mm; background:var(--acc-soft);
+  border-radius:6px; padding:4mm 5mm; margin:3mm 0 5mm; break-inside:avoid }
+.numero b{ font:700 30pt/1 "Inter",sans-serif; color:var(--acc); letter-spacing:-.02em; white-space:nowrap }
+.numero span{ font-size:10.5pt; color:var(--ink-2); line-height:1.4 }
+.numeros{ display:grid; grid-template-columns:repeat(auto-fit,minmax(40mm,1fr)); gap:3mm; margin:3mm 0 5mm }
+.numeros .numero{ display:block; margin:0 }
+.numeros .numero b{ display:block; font-size:20pt; margin-bottom:1.5mm }
+
+/* resumo */
+.resumo{ background:#F7F9FB; border:1px solid var(--line); border-radius:6px; padding:4mm 5mm; margin:0 0 5mm }
+.resumo p:last-child{ margin:0 }
+
+/* caixas (a partir de > [!TIPO] no markdown) */
+.caixa{ border-left:4px solid; border-radius:0 6px 6px 0; padding:3mm 4.5mm; margin:3mm 0 4mm; break-inside:avoid }
+.caixa .rot{ font:600 7.5pt "IBM Plex Mono",monospace; letter-spacing:.14em; text-transform:uppercase; margin-bottom:1.2mm }
+.caixa p:last-child{ margin-bottom:0 }
+.caixa.achado{ border-color:var(--ach); background:var(--ach-bg) } .caixa.achado .rot{ color:var(--ach) }
+.caixa.decisao{ border-color:var(--dec); background:var(--dec-bg) } .caixa.decisao .rot{ color:var(--dec) }
+.caixa.tecnico{ border-color:var(--tec); background:var(--tec-bg); font-size:9.5pt } .caixa.tecnico .rot{ color:var(--tec) }
+.caixa.cuidado{ border-color:var(--cui); background:var(--cui-bg) } .caixa.cuidado .rot{ color:var(--cui) }
+.caixa.falha{ border-color:var(--fal); background:var(--fal-bg) } .caixa.falha .rot{ color:var(--fal) }
+
+/* figuras */
+figure,p>img:only-child{ margin:3mm 0 5mm; break-inside:avoid }
+img{ max-width:100%; height:auto; display:block; margin:0 auto; border-radius:4px }
+figcaption,.legenda{ font-size:9pt; color:var(--muted); margin-top:1.5mm; text-align:left }
+
+/* tabelas */
+table{ width:100%; border-collapse:collapse; margin:2mm 0 5mm; font-size:9pt; break-inside:auto }
+thead{ display:table-header-group }
+tr{ break-inside:avoid }
+th{ text-align:left; font:600 7.5pt "IBM Plex Mono",monospace; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); border-bottom:1.5px solid var(--ink); padding:1.8mm 2.5mm 1.8mm 0 }
+td{ border-bottom:1px solid var(--line); padding:1.8mm 2.5mm 1.8mm 0; vertical-align:top }
+
+/* veredito do tollgate */
+.ok,.ressalva,.falha-t{ font:600 7.5pt "IBM Plex Mono",monospace; padding:.6mm 2mm; border-radius:20px; white-space:nowrap }
+.ok{ background:var(--dec-bg); color:var(--dec) }
+.ressalva{ background:var(--cui-bg); color:var(--cui) }
+.falha-t{ background:var(--fal-bg); color:var(--fal) }
+
+/* bastidores: menor, no fim */
+.bastidores{ font-size:9pt; color:var(--ink-2) }
+ul,ol{ margin:0 0 3mm; padding-left:5mm } li{ margin-bottom:1mm }
+blockquote{ margin:3mm 0; padding-left:4mm; border-left:3px solid var(--line); color:var(--ink-2) }
+</style></head><body>
+<header class="cab"><div class="fase"></div><h1>A triagem de auditoria se sustenta; o ajuste de veraneio não</h1><div class="meta"><strong>Fase 4 · Improve, Saúde fiscal do Rio de Janeiro · Siconfi 2024 (com 2023 para comparação) · 24/10/2026</strong></div></header>
+<div class="caixa tecnico">
+<div class="rot">Detalhe técnico</div>
+<p>Dados públicos e declarados pelos entes, não auditados. Gasto em saúde por habitante não mede qualidade nem necessidade. Cidade sinalizada é cidade para olhar, não cidade errada. Nada foi implementado: os ganhos são estimativas.</p>
+</div>
+<div class="numero"><b>46%</b><span>menos dispersão do gasto por habitante ao comparar cada cidade com cidades de receita parecida, e não com a própria região (92 cidades, 2024)</span></div>
+
+<div class="resumo">
+<p><strong>Em três linhas.</strong> Propus sete contramedidas de controle, com critérios escritos antes das contas (<a href="../../docs/13-improve-criterios.md">docs/13</a>). Quatro se sustentaram, duas são descritivas e <strong>uma caiu no próprio critério</strong> (o ajuste do veraneio). Três dos meus palpites estavam errados, e isso está registrado como resultado.</p>
+</div>
+<h2><span class="n">1</span>A pergunta desta fase</h2>
+<p>O Analyze mostrou que o gasto em saúde segue a receita e os repasses, que todas as cidades cumprem o mínimo de 15% e que ficaram desvios sem explicação. O Improve pergunta o que um controle, uma auditoria ou uma gestão poderia <strong>fazer</strong> com isso, de modo que dê para provar errado. Como o projeto é de diagnóstico e nada se implementa, o rigor está em três coisas: a conta à vista, o ponto de indiferença e o desenho do teste (regras I2 a I4 e I8).</p>
+<h2><span class="n">2</span>O que eu encontrei</h2>
+<table>
+<thead>
+<tr>
+<th>Id</th>
+<th>Contramedida</th>
+<th>Resultado</th>
+<th>Veredito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td>Triagem de auditoria</td>
+<td>4 cidades sinalizadas: Niterói, São Francisco de Itabapoana, São Pedro da Aldeia e a capital. Das 3 fora do intervalo em 2023, 2 repetem em 2024</td>
+<td><strong>Sustentada</strong>, mas o teste de campo não cabe só no RJ</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>Painel de pares por receita</td>
+<td>Dispersão cai 46% (de 0,372 para 0,200), contra 20% exigido; 34 de 92 cidades mudam de leitura</td>
+<td><strong>Sustentada</strong>, com a ressalva de que é em parte por construção</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>Ajuste de veraneio</td>
+<td>O resíduo das Baixadas Litorâneas <strong>piora</strong> de −15% para −18% e nunca chega a zero</td>
+<td><strong>Não sustentada</strong></td>
+</tr>
+<tr>
+<td>R4</td>
+<td>Teste de estresse dos repasses</td>
+<td>Entre cidades, elasticidade 0,68; de um ano para o outro dentro da cidade, 0,28 (intervalo 0,004 a 0,565)</td>
+<td><strong>Sustentada com cautela</strong>: o critério passa, mas encostando no zero</td>
+</tr>
+<tr>
+<td>R5</td>
+<td>Folga sobre o mínimo de 15%</td>
+<td>Nenhuma abaixo do mínimo; 18 com folga abaixo de 3 pontos; 7 com menos de 1 ponto</td>
+<td><strong>Descritiva</strong>; meu palpite (até 6) errou</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>Reconciliação Siconfi × SIOPS</td>
+<td>Razão mediana 0,37, quartis 0,26 a 0,48; 11 cidades fora da faixa; nenhuma é sinalizada na R1</td>
+<td><strong>Utilizável como pergunta</strong></td>
+</tr>
+<tr>
+<td>R7</td>
+<td>Painel de limites da LRF</td>
+<td>22 municípios declaram pessoal acima do limite prudencial; nenhum tem dívida perto do limite</td>
+<td><strong>Descritiva</strong>; meu palpite (até 10) errou</td>
+</tr>
+</tbody>
+</table>
+<h3>2.1 R1: a triagem separa poucas cidades, e elas persistem</h3>
+<p><strong>Quatro cidades ficam fora do intervalo de previsão sem a própria cidade no ajuste:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Cidade</th>
+<th>Grupo</th>
+<th>Gasto contra o previsto 2024</th>
+<th>2023</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Niterói</td>
+<td>Metropolitana (resto)</td>
+<td>−47,7%</td>
+<td>−49,0% (também fora do intervalo)</td>
+</tr>
+<tr>
+<td>São Francisco de Itabapoana</td>
+<td>Norte Fluminense</td>
+<td>−42,6%</td>
+<td>−41,7% (também fora)</td>
+</tr>
+<tr>
+<td>São Pedro da Aldeia</td>
+<td>Baixadas Litorâneas</td>
+<td>−36,7%</td>
+<td>−28,4%</td>
+</tr>
+<tr>
+<td>Rio de Janeiro (capital)</td>
+<td>Capital</td>
+<td>−35,0%</td>
+<td>−32,7%</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Retroteste:</strong> das 3 cidades fora do intervalo em 2023, 2 repetem em 2024 (67%), contra 4% de taxa-base. O teste exato de Fisher dá p = 0,004. O resíduo de 2023 e o de 2024 têm correlação de postos de +0,77.</li>
+<li><strong>O palpite sobre as Baixadas Litorâneas errou.</strong> Eu esperava essa região sobrerrepresentada; só uma das 10 cidades dela é sinalizada. O desvio de −13% a −15% do Analyze é de <strong>grupo</strong>: nenhuma cidade da região é extrema sozinha, o grupo todo fica um pouco abaixo.</li>
+<li><strong>Niterói e São Francisco de Itabapoana são novos para a lista de auditoria.</strong> Não têm explicação nos dados. Entram como achado para auditoria, com a ressalva de que pode haver gasto registrado em outro ente ou fundo.</li>
+<li><strong>Conta à vista:</strong> o desvio somado das 4 é de R$ 5,0 bilhões que a receita prevê a mais (isto <strong>não é ganho</strong>, é a magnitude do que ficou sem explicação). Com a parcela sem explicação legítima de 20%, 50% e 80%, esperam-se 0,8, 2,0 e 3,2 cidades com achado.</li>
+<li><strong>Ponto de indiferença:</strong> a triagem vale o custo se a parcela sem explicação ficar acima de 1/v, onde v é quantas vezes um achado vale o custo de olhar uma cidade: 50% (v = 2), 20% (v = 5), 10% (v = 10).</li>
+</ul>
+<div class="caixa cuidado">
+<div class="rot">Cuidado</div>
+<p><strong>O teste de campo não cabe só no RJ.</strong> Com 4 sinalizadas e 4 controles, poder de 80% e taxa-base de achado de 20%, só se detectaria diferença a partir de 99%. Para distinguir 20% de 50% seriam necessárias 38 cidades por grupo. Por isso o desenho propõe ampliar para outros estados, que o Siconfi cobre.</p>
+</div>
+<h3>2.2 R2: comparar por receita parecida lê melhor do que comparar por região</h3>
+<p><strong>A dispersão cai de 0,372 para 0,200 (46%), com 92 cidades e a mediana do grupo calculada sem a própria cidade.</strong> O limite que fixei era 20%.</p>
+<ul>
+<li><strong>Placebo:</strong> cinco grupos sorteados com os mesmos tamanhos (2.000 vezes) dão 0,388; os pares ficam muito abaixo do 5º percentil (0,365).</li>
+<li><strong>A leitura muda:</strong> 34 de 92 cidades trocam de lado (abaixo ou acima da mediana do grupo) ao trocar a região pelos pares. A Baixada (núcleo de 6) passa de −33% contra a região para −15% contra os pares; a Metropolitana (resto) passa de +27% para +2%.</li>
+<li><strong>Limite honesto:</strong> agrupar por receita explica o gasto em boa parte por construção, porque gasto é receita vezes a fatia. O ganho é de <strong>leitura</strong> para quem gere, não de causa.</li>
+</ul>
+<h3>2.3 R3: contar visitantes no denominador não aproxima o resíduo de zero</h3>
+<p><strong>Quanto mais visitantes por domicílio de uso ocasional eu somo à população, mais negativo fica o resíduo das Baixadas Litorâneas.</strong> Com 0, 1, 2 e 3 pessoas por domicílio, o resíduo mediano vai de −15,0% a −16,8%, −17,9% e −18,2%, e nem com 10 pessoas chega a zero.</p>
+<ul>
+<li><strong>Por quê:</strong> a elasticidade da receita é abaixo de 1. Dividir gasto e receita por uma população maior reduz o gasto por habitante mais do que reduz o previsto, e o resíduo cai. É um efeito do denominador, e não uma refutação do uso ocasional.</li>
+<li><strong>O que ainda vale do Analyze (H7):</strong> usar o uso ocasional como <strong>variável de controle</strong> reduziu o resíduo de −15% para −9%. Isso é outra operação, resultado parcial do Analyze, e não uma recomendação nova daqui.</li>
+<li><strong>Consequência:</strong> a R3 como desenhada não entra na lista de recomendações. O achado para auditoria das Baixadas Litorâneas <strong>permanece</strong>.</li>
+</ul>
+<h3>2.4 R4: o teste de estresse vale, mas o efeito dentro da cidade é menor</h3>
+<p><strong>Se os repasses caíssem 20%, o gasto em saúde cairia entre 6% e 14%, conforme a elasticidade usada.</strong> Como o gasto total das 92 cidades é de cerca de R$ 27,8 bilhões, isso é de R$ 1,7 a R$ 3,9 bilhões.</p>
+<table>
+<thead>
+<tr>
+<th>Queda dos repasses</th>
+<th>Ano a ano (0,28; IC 0,004 a 0,565)</th>
+<th>Entre cidades (0,68; IC 0,57 a 0,78)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10%</td>
+<td>−3,0% (de 0,0% a −5,8%)</td>
+<td>−6,9% (de −5,9% a −7,9%)</td>
+</tr>
+<tr>
+<td>20%</td>
+<td>−6,1% (de −0,1% a −11,8%)</td>
+<td>−14,0% (de −12,0% a −16,0%)</td>
+</tr>
+<tr>
+<td>30%</td>
+<td>−9,6% (de −0,1% a −18,2%)</td>
+<td>−21,5% (de −18,5% a −24,3%)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Critério fixado antes:</strong> o coeficiente de ano a ano ter intervalo sem zero. <strong>Passou, mas por pouco</strong>: 0,284 (0,004 a 0,565), R² de 0,035. Por isso mostro as duas colunas e não só a de 0,68, que supõe que o efeito entre cidades vale dentro de uma cidade.</li>
+<li><strong>Ponto de indiferença</strong> (queda dos repasses que reduz o gasto em 10%): 14,4% com a elasticidade entre cidades; 31,0% com a de ano a ano; 17,0% no pior caso do ano a ano.</li>
+<li><strong>Quem está mais exposto:</strong> cidades onde 90% a 92% da receita vem de repasses (Rio das Flores, Santa Maria Madalena, Engenheiro Paulo de Frontin e São Francisco de Itabapoana, entre outras). A capital tem 34%.</li>
+<li><strong>Dependência de regra (I13):</strong> parte dos repasses é carimbada do SUS e depende de regra federal. Se a regra mudar, a conta muda.</li>
+</ul>
+<h3>2.5 R5, R6 e R7: três painéis descritivos</h3>
+<ul>
+<li><strong>R5, folga sobre o mínimo de 15%:</strong> nenhuma cidade abaixo do mínimo. Pelo critério (folga abaixo de 3 pontos), <strong>18 cidades</strong>, entre elas a capital (17,8%) e Niterói (16,9%), que têm folga grande em reais (R$ 596 milhões e R$ 47 milhões). Abaixo de 1 ponto são 7: Mesquita, Magé, Paracambi, Natividade, Miguel Pereira, São Sebastião do Alto e Engenheiro Paulo de Frontin. Para zerar a folga, o gasto próprio teria de cair 0,6% em Paracambi e 15,7% na capital. A folga mediana é de 8,3 pontos (R$ 328 por habitante).</li>
+<li><strong>R6, Siconfi × SIOPS:</strong> razão mediana de 0,37 (quartis 0,26 a 0,48; amplitude 0,22, abaixo do 0,30 que eu tinha fixado). Onze cidades ficam fora de mediana ± 2 desvios absolutos (Magé, Rio das Ostras, Itaguaí, Macaé, Angra dos Reis, entre outras). <strong>Nenhuma coincide com as sinalizadas na R1</strong>: são sinais independentes. Os conceitos das duas fontes são diferentes, então a lista é uma pergunta para conciliação e não um alarme.</li>
+<li><strong>R7, limites da LRF:</strong></li>
+<li><strong>Pessoal:</strong> 22 municípios declaram pessoal acima do limite prudencial (11 acima do máximo). Três deles estão marcados no Measure como "RCL atípica" (Areal, Itaperuna e Miracema, com 122% a 154%); sem esses três, são 19 acima do prudencial e 8 acima do máximo. O <strong>estado</strong> declara 46,8% da RCL, um pouco acima do prudencial (46,5%) e abaixo do máximo (49,0%).</li>
+<li><strong>Dívida:</strong> nenhum município chega a 80% do limite; 53 têm dívida líquida negativa. O estado declara 211,3% da RCL, acima do limite de 200%.</li>
+<li><strong>Restos a pagar:</strong> 23 municípios no quartil superior (a partir de 4,5% da receita), com Rio Bonito (28,6%) e Barra do Piraí (20,4%) à frente.</li>
+<li><strong>Cuidado de leitura:</strong> é o valor declarado. Acima do limite não significa irregular; pode ser deduções, base de cálculo ou problema do dado. A R7 não ataca causa validada (o Analyze não testou pessoal, dívida nem restos a pagar).</li>
+</ul>
+<h2><span class="n">3</span>O que eu decidi</h2>
+<table>
+<thead>
+<tr>
+<th>Escolha</th>
+<th>O que usei</th>
+<th>O que mais considerei</th>
+<th>Por que esta</th>
+<th>Evidência</th>
+<th>Regra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Intervalo da triagem</td>
+<td>Previsão de 95% <strong>sem a própria cidade</strong> (deixa-uma-fora)</td>
+<td>Intervalo do ajuste com todas (convencional)</td>
+<td>Com a cidade dentro, ela puxa o modelo para si e some do alvo</td>
+<td><code>improve_r1_triagem.csv</code></td>
+<td>I1, I2</td>
+</tr>
+<tr>
+<td>Teste da triagem</td>
+<td>Persistência 2023→2024 por Fisher exato e correlação de postos</td>
+<td>Só descrever os casos</td>
+<td>Com 3 casos, o exato é o teste adequado; o aviso dos dois anos não independentes fica no texto</td>
+<td>p = 0,004</td>
+<td>I8</td>
+</tr>
+<tr>
+<td>Comparação de pares</td>
+<td>Cinco faixas por quantis de receita, mediana sem a própria cidade, com placebo</td>
+<td>Regiões do CEPERJ (convencional)</td>
+<td>O Analyze mostrou que a receita explica a maior parte; o placebo mostra que a queda não é acaso de agrupar</td>
+<td>0,372 contra 0,200</td>
+<td>I2</td>
+</tr>
+<tr>
+<td>Ajuste de veraneio</td>
+<td>População somada de visitantes em quatro cenários, e o valor que zeraria</td>
+<td>Variável de controle (já feita no H7)</td>
+<td>Testa se a correção da base é viável; o ponto de indiferença é o número principal</td>
+<td><code>improve_r3_veraneio.csv</code></td>
+<td>I4</td>
+</tr>
+<tr>
+<td>Elasticidade do estresse</td>
+<td>Duas: entre cidades e de ano a ano (primeiras diferenças)</td>
+<td>Só a do corte transversal (convencional)</td>
+<td>A segunda mede o que importa para um choque dentro de uma cidade</td>
+<td>0,68 e 0,28</td>
+<td>I3, I13</td>
+</tr>
+<tr>
+<td>Tamanho do teste</td>
+<td>Poder de 80%, nível 5%, taxa-base de 20% como premissa</td>
+<td>Não calcular</td>
+<td>Sem calcular, não se sabe que o piloto não decide</td>
+<td>4 sinalizadas só detectam 99%; 38 por grupo</td>
+<td>I8</td>
+</tr>
+<tr>
+<td>Limiares</td>
+<td>R2 em 20%, R5 em 3 pontos, R1 palpite de 8</td>
+<td>Sem limiar</td>
+<td>Fixados antes de ver resultado</td>
+<td>docs/13</td>
+<td>I3</td>
+</tr>
+</tbody>
+</table>
+<div class="caixa decisao">
+<div class="rot">Decisão</div>
+<p><strong>Decisão de enquadramento:</strong> as sete contramedidas são de <strong>controle e gestão</strong>, não de política de saúde. Nenhuma diz que se deve gastar mais, porque gasto não mede qualidade.</p>
+</div>
+<h3>Como a regra seria contornada, e o FMEA (I11, I12)</h3>
+<table>
+<thead>
+<tr>
+<th>Contramedida</th>
+<th>Como burlar (Goodhart)</th>
+<th>Falha</th>
+<th>Gravidade</th>
+<th>Ocorrência</th>
+<th>Detecção</th>
+<th>Prioridade</th>
+<th>Mitigação antes do piloto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1 triagem</td>
+<td>Registrar gasto em outro ente ou fundo para sair da faixa</td>
+<td>Sinalizar cidade com explicação legítima</td>
+<td>6</td>
+<td>6</td>
+<td>5</td>
+<td>180</td>
+<td>Pedir a explicação antes de auditar; comparar com a DCA</td>
+</tr>
+<tr>
+<td>R2 pares</td>
+<td>Usar faixas de receita que escondam a cidade</td>
+<td>Ler a faixa como meta</td>
+<td>5</td>
+<td>5</td>
+<td>6</td>
+<td>150</td>
+<td>Faixas fixas por quantis, publicadas antes</td>
+</tr>
+<tr>
+<td>R4 estresse</td>
+<td>Tratar o cenário como previsão</td>
+<td>Gestor ancora no número de 0,68</td>
+<td>7</td>
+<td>5</td>
+<td>6</td>
+<td>210</td>
+<td>Mostrar sempre as duas elasticidades e o intervalo</td>
+</tr>
+<tr>
+<td>R5 folga</td>
+<td>Inflar o gasto próprio no fim do ano para passar do mínimo</td>
+<td>Folga artificial</td>
+<td>6</td>
+<td>4</td>
+<td>6</td>
+<td>144</td>
+<td>Ler a folga em dois anos</td>
+</tr>
+<tr>
+<td>R6 reconciliação</td>
+<td>Ajustar um lado da conta para fechar a razão</td>
+<td>Alarme falso por diferença de conceito</td>
+<td>4</td>
+<td>7</td>
+<td>4</td>
+<td>112</td>
+<td>Tratar como pergunta, nunca como alarme</td>
+</tr>
+<tr>
+<td>R7 limites</td>
+<td>Reclassificar despesa para sair do limite</td>
+<td>Ler "acima" como irregular</td>
+<td>7</td>
+<td>5</td>
+<td>5</td>
+<td>175</td>
+<td>Marcar entes com dado atípico, mostrar o valor declarado</td>
+</tr>
+</tbody>
+</table>
+<p>Notas de 1 a 10 são julgamento meu, não medida. Prioridade = gravidade × ocorrência × detecção.</p>
+<h3>O parágrafo do cético, e a resposta (I14)</h3>
+<blockquote>
+<p><strong>Contra:</strong> "Você sinalizou quatro cidades com um modelo que explica só a receita. Niterói e a capital têm hospitais que atendem gente de fora, e o gasto por habitante residente fica para baixo por construção. A triagem só reencontra o que o modelo não conhece, e auditar essas cidades é gastar o tempo de quem controla."</p>
+<p><strong>Resposta:</strong> o ponto é justo, e é por isso que a R1 é de triagem e não de acusação. A recomendação pede a explicação antes de auditar, e o ponto de indiferença diz a parcela sem explicação a partir da qual compensa olhar. O que eu não posso dizer é que a cidade gasta "pouco". Posso dizer que gasta menos do que a receita dela prevê, nos dois anos, sem explicação nos dados públicos.</p>
+</blockquote>
+<p><strong>Não se aplicam (declarado):</strong> I5, porque nenhuma contramedida mexe em preço, prazo ou conveniência de cliente; I7, porque não há horizonte acima de um ano nem ganho em dinheiro a trazer a valor presente. A <code>modelagem.md</code> não se aplica: o projeto é de diagnóstico.</p>
+<h3>Desenho do teste (I8 a I10)</h3>
+<p>Piloto em que uma controladoria olha as cidades sinalizadas e uma amostra de não sinalizadas. <strong>Unidade:</strong> município. <strong>Métrica:</strong> parcela com achado relevante, definido antes. <strong>Duração:</strong> dois exercícios, para cobrir a sazonalidade orçamentária. <strong>Guardas:</strong> esforço por cidade e tempo de resposta. <strong>Parada:</strong> fixada em número de cidades, sem espiar o resultado. <strong>Tamanho:</strong> 38 por grupo para distinguir 20% de 50%, o que exige outros estados. <strong>Ameaças:</strong> contaminação (um achado muda o comportamento de vizinhos), efeito novidade e perda diferencial de cidades que não respondem. Sem aleatorizar (I10), a alternativa é comparar sinalizadas com não sinalizadas de resíduo parecido; a premissa é que o resíduo antes da triagem seja a única diferença, e ela se verifica com o histórico de 2023.</p>
+<h2><span class="n">4</span>Para você explicar esta fase</h2>
+<p><strong>A fase em 30 segundos.</strong> "Depois de entender que o gasto em saúde segue a receita, propus sete ferramentas de controle, com critérios escritos antes. Uma triagem separou quatro cidades que gastam bem menos do que a receita prevê, e duas delas repetem em 2023. Comparar por receita parecida lê melhor do que comparar por região. E uma ideia minha, a do ajuste de veraneio, não funcionou, e eu registrei isso."</p>
+<table>
+<thead>
+<tr>
+<th>Pergunta que vão fazer</th>
+<th>Resposta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Por que você não propõe gastar mais em saúde?</td>
+<td>Gasto não mede qualidade, e o dado não mostra necessidade. As recomendações são de controle: onde olhar, como comparar e que risco vigiar.</td>
+</tr>
+<tr>
+<td>Por que só 4 cidades sinalizadas?</td>
+<td>O intervalo de previsão é de 95% e a cidade fica fora do ajuste. Quatro é pouco para decidir um piloto; por isso a proposta de ampliar para outros estados.</td>
+</tr>
+<tr>
+<td>O que deu errado?</td>
+<td>O ajuste do veraneio. Somar visitantes à população piorou o resíduo, porque a elasticidade é menor que 1. E três palpites meus erraram (Baixadas Litorâneas, folga e limite de pessoal).</td>
+</tr>
+<tr>
+<td>O teste de estresse é previsão?</td>
+<td>Não. A elasticidade entre cidades (0,68) é de cortes transversais; a de ano a ano (0,28) é a que mais se aproxima do que acontece em uma cidade. Mostro as duas.</td>
+</tr>
+<tr>
+<td>Por que sem teste de campo?</td>
+<td>Em portfólio nada se implementa. Eu desenho o teste e calculo o tamanho; o RJ sozinho não tem cidades suficientes.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Números para saber de cor:</strong> 46% (menos dispersão por pares); 2 de 3 cidades se repetem de 2023 para 2024 na triagem; 0,28 contra 0,68 (elasticidade dos repasses, dentro e entre cidades); 38 cidades por grupo para o piloto.</p>
+<h2><span class="n">5</span>O que ainda não sei</h2>
+<ul>
+<li>Se Niterói e São Francisco de Itabapoana têm explicação legítima. Pergunta para quem acessa os livros.</li>
+<li>Se a elasticidade de ano a ano (0,28) é estável. Usei dois exercícios; mais anos ajudariam.</li>
+<li>Quanto pesa a folha de pessoal ou a dívida no gasto em saúde: o Analyze não testou. Fica para as extensões (<a href="../../docs/12-extensoes-depois-do-nucleo.md">docs/12</a>).</li>
+<li>Se a razão entre SIOPS e Siconfi (R6) tem um valor esperado: os conceitos são diferentes.</li>
+<li>O que pode invalidar: dado declarado que seja retificado (B4 segue aberto); 2023 e 2024 usam as mesmas 92 cidades, então não são amostras independentes; Carmo ficou fora de 2023.</li>
+</ul>
+<h2><span class="n">6</span>O veredito</h2>
+<p><strong>APROVADO pelo responsável em 24/10/2026.</strong> O critério é a qualidade do processo, e não se as hipóteses se confirmaram.</p>
+<table>
+<thead>
+<tr>
+<th>Critério</th>
+<th>Veredito</th>
+<th>Motivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Critérios e palpites escritos antes</td>
+<td><span class="ok">OK</span></td>
+<td>docs/13, com data, antes da primeira conta</td>
+</tr>
+<tr>
+<td>Contrafactual escrito e conta à vista, em faixas</td>
+<td><span class="ok">OK</span></td>
+<td>R1 e R4 com três cenários; R2 a R7 com a medida e o critério</td>
+</tr>
+<tr>
+<td>Ponto de indiferença</td>
+<td><span class="ok">OK</span></td>
+<td>R1, R3, R4 e R5</td>
+</tr>
+<tr>
+<td>Desenho de teste com tamanho calculado</td>
+<td><span class="ok">OK</span></td>
+<td>38 por grupo; limite do RJ declarado</td>
+</tr>
+<tr>
+<td>Resultado contrário ao esperado registrado como resultado</td>
+<td><span class="ok">OK</span></td>
+<td>R3 e três palpites</td>
+</tr>
+<tr>
+<td>FMEA, contorno da regra e cético</td>
+<td><span class="ok">OK</span></td>
+<td>seção 3</td>
+</tr>
+<tr>
+<td>Honestidade sobre causa</td>
+<td><span class="ok">OK</span></td>
+<td>R7 declarada descritiva; R2 declarada em parte por construção</td>
+</tr>
+</tbody>
+</table>
+<h2><span class="n">7</span>O próximo capítulo</h2>
+<p><strong>Control:</strong> transformar as seis contramedidas que sobreviveram em plano de monitoramento: o que medir, com que limite de alerta, quem olha e o que fazer quando disparar. A R3 fica de fora. As extensões (SUS, idade em faixas, pessoal e dívida contra o gasto) só entram depois do núcleo.</p>
+<h2>Bastidores</h2>
+<table>
+<thead>
+<tr>
+<th>Passo</th>
+<th>Script</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Critérios e palpites</td>
+<td><code>docs/13-improve-criterios.md</code></td>
+</tr>
+<tr>
+<td>R1 a R7: todas as contas</td>
+<td><code>scripts/30_improve_recomendacoes.py</code></td>
+</tr>
+<tr>
+<td>Saída completa, linha a linha</td>
+<td><code>dados_tratados/improve_saida.txt</code></td>
+</tr>
+<tr>
+<td>Tabelas por cidade</td>
+<td><code>dados_tratados/improve_r1_triagem.csv</code>, <code>improve_r2_pares.csv</code>, <code>improve_r3_veraneio.csv</code>, <code>improve_r4_estresse.csv</code>, <code>improve_r4_dependencia.csv</code>, <code>improve_r5_r6_siops.csv</code>, <code>improve_r7_limites.csv</code></td>
+</tr>
+</tbody>
+</table>
+</body></html>

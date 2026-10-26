@@ -14,7 +14,11 @@ Projeto de análise de dados públicos reais (Siconfi, Tesouro Nacional), conduz
 | Define (pergunta, Y e X, SIPOC, mapa do processo) | concluída | [docs/01](docs/01-define-relatorio.md) |
 | Measure 2A (o dado é confiável?) | concluída, aprovada com ressalva | [fases/fase-2a-measure-qualidade](fases/fase-2a-measure-qualidade/relatorio.pdf) |
 | Measure 2B (o que o processo entrega hoje?) | concluída, aprovada com ressalva | [fases/fase-2b-measure-baseline](fases/fase-2b-measure-baseline/relatorio.pdf) |
-| Analyze, Improve, Control | não iniciadas | [fases/indice.md](fases/indice.md) |
+| Analyze (o que explica o gasto por habitante?) | concluída, aprovada | [fases/fase-3-analyze](fases/fase-3-analyze/relatorio.pdf) |
+| Improve (o que controle, auditoria e gestão podem fazer com isso?) | concluída, aprovada | [fases/fase-4-improve](fases/fase-4-improve/relatorio.pdf) |
+| Control (como acompanhar sem perder o rumo) | em andamento: confirmação com dados de 2025 feita | [docs/14](docs/14-control-previsoes-2025.md), [docs/15](docs/15-plano-de-controle.md) |
+
+O mapa completo, com as decisões que atravessam o projeto, está em [fases/indice.md](fases/indice.md).
 
 ## O que já se sabe (baseline do Measure, 2024)
 
@@ -41,6 +45,7 @@ Ao conferir os dados apareceram casos que os dados públicos **não explicam** (
 | `dados_tratados/` | Indicadores calculados e conferências |
 | `planilhas/` | Planilha em Excel com fórmulas visíveis e conferida contra o código |
 | `imagens/` | SIPOC e mapa do processo |
+| `tests/` e `config/` | Testes automáticos do dado e parâmetros fixados do projeto |
 
 ## Fontes de dados
 
@@ -56,7 +61,16 @@ Credibilidade e limitações de cada fonte: [docs/02-fontes-de-dados.md](docs/02
 
 ## Como reproduzir
 
-Python 3.11 com `pandas`, `matplotlib`, `openpyxl`, `nbformat`, `nbconvert` e `pillow`. A coleta usa a API pública do Siconfi e do IBGE, sem chave.
+**O caminho curto (Analyze, Improve e Control).** Os dados brutos já estão no repositório. Com Python 3.11:
+
+```
+pip install -r requirements.txt
+python -X utf8 scripts/run_all.py
+```
+
+Em cerca de dois minutos o comando refaz todas as contas e roda os testes. Na última conferência, os arquivos de resultado saíram idênticos aos gravados. Para baixar de novo 2023 e 2025 do Siconfi, use `--coleta` (demora e depende do site do Tesouro). Os parâmetros fixados estão em [config/parametros.json](config/parametros.json). Os testes automáticos do dado (`python -m pytest tests -q`) também rodam no GitHub a cada mudança.
+
+**O caminho longo (Define e Measure).** A coleta usa a API pública do Siconfi e do IBGE, sem chave.
 
 1. Coleta: `scripts/04_coleta_valores.py`, `06_pessoal_por_poder.py`, `07_viabilidade_divida_restos.py`, `13_coleta_dca_funcao_saude.py`, `14_coleta_rreo_anexo03_rcl.py`.
 2. Indicadores: `cd scripts/fonte_dos_notebooks && python build_nb2.py` (gera `dados_tratados/indicadores_2024.csv`).

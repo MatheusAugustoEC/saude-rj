@@ -147,3 +147,40 @@ A (receita total), B (só própria), C (própria e transferências juntas), D (p
 ### 5. SIOPS: percentual aplicado e parte do gasto
 
 - **Percentual aplicado em ASPS:** vem pronto do SIOPS (arquivo LCL141). **Parte do gasto coberta pelos recursos próprios:** valor aplicado (SIOPS) dividido pelo gasto em saúde do Siconfi. **Limite:** são bases diferentes (o SIOPS conta só recursos próprios dentro das regras da LC 141); a razão é uma ordem de grandeza e não uma identidade.
+
+---
+
+## Módulo IBGE: idade e saneamento (24/10/2026)
+
+Código: `scripts/28_analyze_modulo_ibge.py`. Resultados em `docs/11-modulo-ibge-resultados.md`.
+
+### 1. Variáveis dividas por 10 e efeito em pontos percentuais
+
+- **O que é:** o percentual de idosos e o de esgoto entram no modelo dividido por 10, então o coeficiente b é o efeito de +10 pontos percentuais, e o efeito em % é `exp(b) − 1`. **Por quê:** a variável está em pontos (0 a 100), e um ponto isolado dá efeitos minúsculos; +10 pp é uma unidade legível. **Exemplo:** esgoto de 70% para 80% aumenta o gasto em 3,4% (b = 0,0335, `exp(0,0335) − 1`).
+
+### 2. VIF (fator de inflação da variância)
+
+- **O que é:** mede o quanto o intervalo de um coeficiente "infla" porque a variável se parece com as outras do modelo. **Por quê:** saneamento anda com a receita (correlação −0,42) e a Baixada tem saneamento alto. **Como:** `variance_inflation_factor` do `statsmodels`; VIF acima de 5 pede reserva. **Resultado:** máximo de 1,54.
+
+### 3. Falácia ecológica e inversão de sinal
+
+- A correlação bruta entre esgoto e gasto é negativa (Spearman −0,27), mas, descontada a receita, o coeficiente fica positivo. Isso acontece quando a variável de controle explica a relação bruta (cidades de pouco esgoto são as de receita alta). É a razão de olhar sempre a relação **com e sem controle**. E uma associação entre cidades não diz nada sobre as famílias sem saneamento.
+
+
+---
+
+## Improve (24/10/2026): métodos novos
+
+**Previsão deixa-uma-fora (R1).** *O quê:* para cada cidade, ajusto o modelo em log sem ela e comparo o gasto real com o intervalo de previsão de 95%. *Por quê:* com a cidade dentro do ajuste ela puxa a reta para si, e um desvio grande some. *Como:* 92 ajustes de mínimos quadrados, cada um com 90 ou 91 cidades; a capital é prevista de fora, com o grupo Resto da Metropolitana. *Exemplo:* Niterói fica 47,7% abaixo do previsto e fora do intervalo em 2024 e em 2023.
+
+**Teste exato de Fisher (retroteste da R1).** *O quê:* testa se estar fora do intervalo em 2023 está associado a estar fora em 2024, em uma tabela 2 por 2. *Por quê:* com 3 casos em 2023, a aproximação por qui-quadrado não vale. *Como:* teste unilateral; 2 das 3 repetem (67%), contra 4% de taxa-base, p = 0,004. *Cuidado:* os dois anos usam as mesmas 92 cidades, então não são amostras independentes.
+
+**Placebo por permutação (R2).** *O quê:* repito a medida de dispersão com cinco grupos sorteados, com os mesmos tamanhos dos grupos por receita, 2.000 vezes. *Por quê:* mostra que a queda não vem só de dividir as cidades em grupos. *Como:* a média dos placebos é 0,388, o 5º percentil é 0,365, e os pares dão 0,200. *Cuidado:* agrupar por receita ajuda por construção, porque gasto é receita vezes fatia.
+
+**Primeiras diferenças (R4).** *O quê:* regressão da variação do log do gasto por habitante de 2023 para 2024 contra a variação do log dos repasses e da receita própria. *Por quê:* cada cidade serve de controle dela mesma; separa o que acontece dentro da cidade do que diferencia as cidades. *Como:* 90 cidades sem a capital (Carmo fora), erros HC3; coeficiente dos repasses 0,284 (0,004 a 0,565). *Cuidado:* só dois anos; R² de 0,035.
+
+**Poder e tamanho de amostra (R1).** *O quê:* a menor diferença entre taxas de achado que o piloto detectaria, com poder de 80% e nível de 5%. *Por quê:* um piloto sem poder não decide nada. *Como:* tamanho do efeito de Cohen para proporções (h), com taxa-base de 20% como premissa. 4 contra 4 só detecta 99%; para 20% contra 50%, 38 por grupo.
+
+**Ponto de indiferença (R1, R3, R4, R5).** *O quê:* o valor da premissa decisiva que anularia o ganho. *Exemplo:* queda de repasses que reduz o gasto em 10% = 1 − 0,9^(1/b), 14,4% com b = 0,68 e 31,0% com b = 0,28.
+
+**Desvio absoluto da mediana (R6).** *O quê:* medida robusta de dispersão, a mediana dos desvios em relação à mediana. *Por quê:* a razão Siconfi × SIOPS tem valores extremos que distorcem o desvio-padrão. *Como:* fora da faixa se a razão fica a mais de 2 desvios absolutos da mediana (0,22).

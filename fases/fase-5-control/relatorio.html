@@ -1,0 +1,411 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>/* Estilo dos relatórios de fase — metodo-dmaic.
+   Usado por gerar_pdf.py. O destaque (--acc) pode ser trocado por projeto. */
+:root{
+  --acc:#2F5D8A; --acc-soft:#E8EFF6;
+  --ink:#1B2430; --ink-2:#44505E; --muted:#6B7785; --line:#DCE2E8; --paper:#FFFFFF;
+  --ach:#2F5D8A;  --ach-bg:#EAF1F8;   /* achado */
+  --dec:#2E7D5B;  --dec-bg:#E9F5EF;   /* decisão */
+  --tec:#5B6573;  --tec-bg:#F2F4F6;   /* detalhe técnico */
+  --cui:#B26B00;  --cui-bg:#FFF4E0;   /* cuidado / limitação */
+  --fal:#B3261E;  --fal-bg:#FCEBEA;   /* falha */
+}
+@page{ size:A4; margin:18mm 17mm 20mm }   /* rodapé com projeto e página: gerar_pdf.py */
+*{ box-sizing:border-box }
+html{ -webkit-print-color-adjust:exact; print-color-adjust:exact }
+body{ margin:0; background:var(--paper); color:var(--ink);
+  font:10.5pt/1.55 "Inter","Segoe UI",system-ui,sans-serif; hyphens:auto }
+
+/* cabeçalho */
+.cab{ border-left:4px solid var(--acc); padding:2mm 0 2mm 5mm; margin-bottom:6mm }
+.cab .fase{ font:600 8pt "IBM Plex Mono",monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--acc) }
+.cab .meta{ font-size:8.5pt; color:var(--muted); margin-top:1mm }
+h1{ font:700 20pt/1.18 "Inter",sans-serif; letter-spacing:-.01em; margin:1.5mm 0 0 }
+
+/* títulos-mensagem */
+h2{ font:700 13.5pt/1.25 "Inter",sans-serif; margin:8mm 0 2.5mm; color:var(--ink);
+  break-after:avoid; padding-top:3mm; border-top:1px solid var(--line) }
+h2 .n{ font:500 9pt "IBM Plex Mono",monospace; color:var(--acc); margin-right:2mm; vertical-align:2px }
+h3{ font:650 11.5pt/1.3 "Inter",sans-serif; margin:5mm 0 1.5mm; color:var(--ink); break-after:avoid }
+p{ margin:0 0 2.6mm }
+strong{ color:var(--ink) }
+a{ color:var(--acc) }
+code{ font:.88em "IBM Plex Mono",monospace; background:var(--tec-bg); padding:.1em .35em; border-radius:3px }
+
+/* número em destaque */
+.numero{ display:flex; align-items:baseline; gap:4mm; background:var(--acc-soft);
+  border-radius:6px; padding:4mm 5mm; margin:3mm 0 5mm; break-inside:avoid }
+.numero b{ font:700 30pt/1 "Inter",sans-serif; color:var(--acc); letter-spacing:-.02em; white-space:nowrap }
+.numero span{ font-size:10.5pt; color:var(--ink-2); line-height:1.4 }
+.numeros{ display:grid; grid-template-columns:repeat(auto-fit,minmax(40mm,1fr)); gap:3mm; margin:3mm 0 5mm }
+.numeros .numero{ display:block; margin:0 }
+.numeros .numero b{ display:block; font-size:20pt; margin-bottom:1.5mm }
+
+/* resumo */
+.resumo{ background:#F7F9FB; border:1px solid var(--line); border-radius:6px; padding:4mm 5mm; margin:0 0 5mm }
+.resumo p:last-child{ margin:0 }
+
+/* caixas (a partir de > [!TIPO] no markdown) */
+.caixa{ border-left:4px solid; border-radius:0 6px 6px 0; padding:3mm 4.5mm; margin:3mm 0 4mm; break-inside:avoid }
+.caixa .rot{ font:600 7.5pt "IBM Plex Mono",monospace; letter-spacing:.14em; text-transform:uppercase; margin-bottom:1.2mm }
+.caixa p:last-child{ margin-bottom:0 }
+.caixa.achado{ border-color:var(--ach); background:var(--ach-bg) } .caixa.achado .rot{ color:var(--ach) }
+.caixa.decisao{ border-color:var(--dec); background:var(--dec-bg) } .caixa.decisao .rot{ color:var(--dec) }
+.caixa.tecnico{ border-color:var(--tec); background:var(--tec-bg); font-size:9.5pt } .caixa.tecnico .rot{ color:var(--tec) }
+.caixa.cuidado{ border-color:var(--cui); background:var(--cui-bg) } .caixa.cuidado .rot{ color:var(--cui) }
+.caixa.falha{ border-color:var(--fal); background:var(--fal-bg) } .caixa.falha .rot{ color:var(--fal) }
+
+/* figuras */
+figure,p>img:only-child{ margin:3mm 0 5mm; break-inside:avoid }
+img{ max-width:100%; height:auto; display:block; margin:0 auto; border-radius:4px }
+figcaption,.legenda{ font-size:9pt; color:var(--muted); margin-top:1.5mm; text-align:left }
+
+/* tabelas */
+table{ width:100%; border-collapse:collapse; margin:2mm 0 5mm; font-size:9pt; break-inside:auto }
+thead{ display:table-header-group }
+tr{ break-inside:avoid }
+th{ text-align:left; font:600 7.5pt "IBM Plex Mono",monospace; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); border-bottom:1.5px solid var(--ink); padding:1.8mm 2.5mm 1.8mm 0 }
+td{ border-bottom:1px solid var(--line); padding:1.8mm 2.5mm 1.8mm 0; vertical-align:top }
+
+/* veredito do tollgate */
+.ok,.ressalva,.falha-t{ font:600 7.5pt "IBM Plex Mono",monospace; padding:.6mm 2mm; border-radius:20px; white-space:nowrap }
+.ok{ background:var(--dec-bg); color:var(--dec) }
+.ressalva{ background:var(--cui-bg); color:var(--cui) }
+.falha-t{ background:var(--fal-bg); color:var(--fal) }
+
+/* bastidores: menor, no fim */
+.bastidores{ font-size:9pt; color:var(--ink-2) }
+ul,ol{ margin:0 0 3mm; padding-left:5mm } li{ margin-bottom:1mm }
+blockquote{ margin:3mm 0; padding-left:4mm; border-left:3px solid var(--line); color:var(--ink-2) }
+</style></head><body>
+<header class="cab"><div class="fase"></div><h1>Oito de nove conclusões resistiram a um ano novo; a lista de cidades da triagem, não</h1><div class="meta"><strong>Fase 5 · Control, Saúde fiscal do Rio de Janeiro · Siconfi 2023 a 2025 · 25/10/2026</strong></div></header>
+<div class="caixa tecnico">
+<div class="rot">Detalhe técnico</div>
+<p>Os dados são declarados pelas prefeituras e pelo estado, e não foram auditados. Gasto em saúde por habitante não mede qualidade nem necessidade. Cidade sinalizada é cidade para olhar, não cidade errada. Nada foi implementado em órgão nenhum.</p>
+</div>
+<div class="numero"><b>8 de 9</b><span>conclusões se mantiveram em 2025, um ano que eu só abri depois de escrever as previsões (86 cidades do Rio de Janeiro)</span></div>
+
+<div class="resumo">
+<p><strong>Em três linhas.</strong> Abri 2025 uma única vez, com critérios escritos antes: oito conclusões se sustentaram, uma enfraqueceu (a lista de cidades da triagem) e nenhuma caiu. Escrevi o plano de acompanhamento, 13 testes automáticos do dado e um comando que refaz tudo em cerca de dois minutos. O Kaizen (documento à parte) mostra que o maior problema do projeto foi conseguir os dados.</p>
+</div>
+<h2><span class="n">1</span>A pergunta desta fase</h2>
+<p>O Improve propôs ferramentas de controle. O Control pergunta se o que foi concluído <strong>continua valendo</strong> com dado novo e como acompanhar isso sem perder o rumo. Duas coisas são controladas: o processo (o plano de acompanhamento) e o próprio projeto (os testes e a reprodução).</p>
+<h2><span class="n">2</span>O que eu encontrei</h2>
+<h3>2.1 Em 2025, oito conclusões se mantêm e a lista de cidades da triagem enfraquece</h3>
+<p><strong>Das nove conclusões que vinham de antes, oito se sustentam, uma enfraquece e nenhuma cai.</strong> O recorte tem 86 cidades. Ficaram de fora seis: Carmo, Magé, Mendes, Miracema, São Francisco de Itabapoana e Volta Redonda (esta aparece como entregue, mas o anexo veio vazio).</p>
+<table>
+<thead>
+<tr>
+<th>Id</th>
+<th>Conclusão</th>
+<th>Resultado em 2025</th>
+<th>Classificação</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>K1</td>
+<td>Elasticidade da receita abaixo de 1</td>
+<td>0,74 (0,63 a 0,86)</td>
+<td>Sustenta</td>
+</tr>
+<tr>
+<td>K2</td>
+<td>Metropolitana sem conclusão</td>
+<td>−7,2% (−20,7% a +8,6%)</td>
+<td>Sustenta</td>
+</tr>
+<tr>
+<td>K3</td>
+<td>Capital abaixo do previsto</td>
+<td>−33,5%</td>
+<td>Sustenta</td>
+</tr>
+<tr>
+<td>K4</td>
+<td>O gasto segue os repasses</td>
+<td>0,67 contra 0,11 da receita própria</td>
+<td>Sustenta</td>
+</tr>
+<tr>
+<td>K5</td>
+<td>A triagem se repete</td>
+<td>Só 1 das 3 repete</td>
+<td><strong>Enfraquece</strong></td>
+</tr>
+<tr>
+<td>K6</td>
+<td>Pares leem melhor que região</td>
+<td>Dispersão cai 46%</td>
+<td>Sustenta</td>
+</tr>
+<tr>
+<td>K7</td>
+<td>Repasses movem o gasto dentro da cidade</td>
+<td>0,59 (0,27 a 0,92)</td>
+<td>Sustenta</td>
+</tr>
+<tr>
+<td>K8</td>
+<td>Baixadas Litorâneas abaixo do previsto</td>
+<td>−15,6%</td>
+<td>Sustenta</td>
+</tr>
+<tr>
+<td>K9</td>
+<td>Somar visitantes piora o resíduo</td>
+<td>−15,6% vai a −18,8%</td>
+<td>Sustenta</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>A triagem é estável como ordem, não como lista.</strong> A correlação dos resíduos entre 2024 e 2025 é de +0,83. Mas só Niterói fica fora do intervalo nos três anos (−49%, −48% e −44%). A capital e São Pedro da Aldeia voltam para dentro. Araruama entra (−33%): achado novo para auditoria.</li>
+<li><strong>A elasticidade dos repasses dentro da cidade depende do par de anos:</strong> 0,28 (2023→2024) e 0,59 (2024→2025). O teste de estresse mostra as duas, e a elasticidade entre cidades (0,67, estável nos três anos) é a referência.</li>
+<li><strong>Maturidade:</strong> quatro DCAs entraram depois de 31/08/2026. A leitura sem elas não muda nenhuma classificação.</li>
+<li><strong>Meus palpites:</strong> um errou (K7, que eu previa entre 0,10 e 0,45). Seis acertaram. A K5 foi o ponto fraco.</li>
+</ul>
+<div class="caixa cuidado">
+<div class="rot">Cuidado</div>
+<p><strong>Limite da confirmação.</strong> São as mesmas cidades de 2023 e 2024, então 2025 mostra estabilidade no tempo, não vale para outros lugares. 2025 é o primeiro ano dos novos mandatos municipais, e a DCA ainda recebe entregas.</p>
+</div>
+<h3>2.2 O plano de acompanhamento</h3>
+<p>O plano está em <a href="../../docs/15-plano-de-controle.md">docs/15</a>: para cada ferramenta (R1, R2, R4, R5, R6, R7), o que se acompanha, de onde vem o dado, com que frequência, quando soa o alerta, quem olha (como papel) e o que fazer. Inclui ainda quando o dado fica completo, o que invalidaria a análise e o gatilho de revisão da triagem (elasticidade fora de 0,60 a 0,95, poder de explicação abaixo de 0,70).</p>
+<ul>
+<li><strong>Regra de ouro (C13):</strong> o período ainda incompleto aparece <strong>marcado</strong>, não interpretado. Cidade sem dado aparece como "sem dado", nunca como zero.</li>
+<li><strong>Limiar de julgamento meu:</strong> o alerta de dependência de repasses (mais de 90% da receita) é escolha minha, não regra legal.</li>
+</ul>
+<h3>2.3 Testes automáticos e reprodução</h3>
+<ul>
+<li><strong>13 testes</strong> (<code>tests/</code>) conferem volume (92 municípios, 26 estados e o DF), códigos, valores positivos, faixa do gasto por habitante, população de 2025 contra 2024, completude dos balanços de 2023 e 2025 e a elasticidade dentro da faixa conferida. Um deles confere que os dados brutos citados com SHA-256 nos manifestos <strong>não mudaram</strong>.</li>
+<li><strong>Um comando</strong> (<code>scripts/run_all.py</code>) refaz todas as contas e roda os testes. Na conferência, os 8 scripts rodaram em cerca de dois minutos e <strong>todos os arquivos de resultado saíram idênticos</strong> aos gravados.</li>
+<li><strong>No GitHub:</strong> os testes rodam a cada mudança e uma vez por mês, sem usar a internet para buscar dado novo e sem publicar nada. O arquivo foi escrito, mas <strong>ainda não rodou lá</strong>, porque nada foi enviado ao repositório.</li>
+<li><strong>Ambiente e parâmetros:</strong> versões fixadas em <code>requirements.txt</code>; parâmetros em <code>config/parametros.json</code>.</li>
+</ul>
+<div class="caixa tecnico">
+<div class="rot">Detalhe técnico</div>
+<p><strong>Parâmetros no código.</strong> Os scripts novos e os testes leem o arquivo de configuração. Os scripts congelados de fases anteriores mantêm as mesmas constantes dentro do código (listadas no arquivo), porque mexer neles quebraria a cópia congelada de cada fase.</p>
+</div>
+<h3>2.4 Kaizen: o maior problema foi conseguir os dados</h3>
+<p>O Kaizen do projeto tem documento próprio, em linguagem universal: <a href="../../docs/16-kaizen-do-projeto.md">docs/16</a>. Em resumo:</p>
+<ul>
+<li><strong>O que mais atrapalhou:</strong> obter os dados (fontes fora do ar, o Distrito Federal ausente do SIOPS, população que não batia entre o Tesouro e o IBGE) e o escopo misturado entre núcleo e extensões.</li>
+<li><strong>Três mudanças:</strong> testar a fonte antes de escrever a pergunta; dizer o escopo antes de cada passo; uma ficha por fonte com o plano B.</li>
+<li><strong>Horas não medidas:</strong> o peso é qualitativo, com a evidência de cada caso.</li>
+</ul>
+<h2><span class="n">3</span>O que eu decidi</h2>
+<table>
+<thead>
+<tr>
+<th>Escolha</th>
+<th>O que usei</th>
+<th>O que mais considerei</th>
+<th>Por que esta</th>
+<th>Evidência</th>
+<th>Regra</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Confirmação</td>
+<td>2025, aberto uma única vez, com critérios e desempates fixados antes</td>
+<td>Rodar 2023 de novo, ou separar uma parte de 2024</td>
+<td>2023 já tinha sido usado na replicação; 2025 é ano novo de verdade</td>
+<td>docs/14</td>
+<td>C5</td>
+</tr>
+<tr>
+<td>Classificação final</td>
+<td>A pior entre "todas as cidades" e "sem as DCAs recentes"</td>
+<td>Só a leitura com todas</td>
+<td>Dado ainda imaturo não deve ajudar a conclusão</td>
+<td>4 DCAs recentes; nenhuma classificação mudou</td>
+<td>C6</td>
+</tr>
+<tr>
+<td>Carta de controle</td>
+<td><strong>Não usei</strong></td>
+<td>Coletar seis bimestres de vários anos</td>
+<td>Só há dois pontos anuais e o RREO é cumulativo; a carta pediria dezenas de pontos</td>
+<td>docs/15</td>
+<td>C2, C3</td>
+</tr>
+<tr>
+<td>Ganho a verificar</td>
+<td><strong>Não se aplica</strong>: nada foi implementado</td>
+<td>Medir um ganho</td>
+<td>Troquei pela pergunta "o desvio é maior que a variação normal de um ano ao outro?": respondida pelo retroteste do Improve (+0,77) e por 2025 (+0,83)</td>
+<td>docs/13 e docs/14</td>
+<td>C4</td>
+</tr>
+<tr>
+<td>Testes</td>
+<td>Leem só os arquivos do repositório</td>
+<td>Baixar o dado a cada teste</td>
+<td>Teste que depende do site do Tesouro falha por motivo alheio ao dado</td>
+<td>13 testes</td>
+<td>C7</td>
+</tr>
+<tr>
+<td>Automação</td>
+<td>Teste automático no GitHub; página estática atualizada por comando</td>
+<td>Atualização agendada completa</td>
+<td>O dado chega aos poucos e é retificado; publicar sem olhar causaria alarme falso</td>
+<td>4 DCAs recentes</td>
+<td>C8, C13</td>
+</tr>
+</tbody>
+</table>
+<h2><span class="n">4</span>Para você explicar esta fase</h2>
+<p><strong>A fase em 30 segundos.</strong> "Depois de propor as ferramentas, fui testar se elas resistem a um ano novo. Escrevi as previsões antes de abrir o dado de 2025. Oito das nove conclusões se mantiveram. A que enfraqueceu foi a lista de cidades da triagem: o ranking é estável, mas a lista muda de um ano para o outro. Deixei também um plano de acompanhamento, testes automáticos do dado e um comando que refaz tudo."</p>
+<table>
+<thead>
+<tr>
+<th>Pergunta que vão fazer</th>
+<th>Resposta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>O que você fez de diferente em 2025?</td>
+<td>Escrevi as previsões com data antes de baixar o dado e fixei como cada resultado seria classificado. Se desse errado, eu teria de registrar.</td>
+</tr>
+<tr>
+<td>Por que a triagem enfraqueceu?</td>
+<td>O ranking das cidades é estável (+0,83), mas o intervalo é estreito e poucas cidades ficam fora dele. Só Niterói repete nos três anos. A triagem serve para ordenar e para perguntar, não para fazer lista fixa.</td>
+</tr>
+<tr>
+<td>Por que não há carta de controle?</td>
+<td>Só tenho dois pontos anuais, e o relatório bimestral é cumulativo. Uma carta pede dezenas de pontos.</td>
+</tr>
+<tr>
+<td>Isso funciona em outro estado?</td>
+<td>Não sei. As mesmas 86 cidades aparecem nos três anos. O desenho está pronto para outros estados, que o Siconfi cobre.</td>
+</tr>
+<tr>
+<td>E se a fonte cair?</td>
+<td>Cada fonte foi testada com data, e o plano B está registrado. O teste automático avisa se o dado mudar de forma.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Números para saber de cor:</strong> 8 de 9 conclusões se sustentaram em 2025; 3 anos seguidos de Niterói fora do intervalo; correlação +0,83 entre os resíduos de 2024 e 2025; 13 testes; 2 minutos para refazer tudo.</p>
+<h2><span class="n">5</span>O que ainda não sei</h2>
+<ul>
+<li>Se a triagem funciona em outras cidades. Falta olhar outros estados.</li>
+<li>Se a elasticidade de ano a ano é estável: 0,28 e 0,59 são só dois pares de anos.</li>
+<li>Por que Niterói e Araruama destoam. Pergunta para quem acessa os livros.</li>
+<li>Qual versão do relatório a API devolve quando há retificação (B4 aberto).</li>
+<li>Se o teste automático roda sem problema no GitHub. Só saberei depois do primeiro envio.</li>
+<li>O que pode invalidar o plano está em docs/15, seção 4.</li>
+</ul>
+<h2><span class="n">6</span>O veredito</h2>
+<p><strong>APROVADO pelo responsável em 26/10/2026.</strong> O critério é a qualidade do processo, e não se as previsões se confirmaram.</p>
+<table>
+<thead>
+<tr>
+<th>Critério</th>
+<th>Veredito</th>
+<th>Motivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reação escrita antes do problema (C1)</td>
+<td><span class="ok">OK</span></td>
+<td>docs/15, uma linha por ferramenta</td>
+</tr>
+<tr>
+<td>Confirmação aberta uma vez, resultado registrado (C5)</td>
+<td><span class="ok">OK</span></td>
+<td>docs/14, incluindo o "enfraquece" e o palpite errado</td>
+</tr>
+<tr>
+<td>Fim de série imaturo (C6, C13)</td>
+<td><span class="ok">OK</span></td>
+<td>DCAs recentes marcadas; leitura com e sem</td>
+</tr>
+<tr>
+<td>Qualidade do dado em teste automático (C7)</td>
+<td><span class="ok">OK</span></td>
+<td>13 testes passando</td>
+</tr>
+<tr>
+<td>Reprodutível por um estranho (C8)</td>
+<td><span class="ok">OK</span></td>
+<td>um comando; saídas idênticas</td>
+</tr>
+<tr>
+<td>Teste automático no GitHub</td>
+<td><span class="ressalva">RESSALVA</span></td>
+<td>escrito, mas ainda não rodou lá (nada foi enviado)</td>
+</tr>
+<tr>
+<td>O que invalida e quando revisar (C9, C10)</td>
+<td><span class="ok">OK</span></td>
+<td>docs/15, seções 4 e 5</td>
+</tr>
+<tr>
+<td>Padrões reutilizáveis (C11)</td>
+<td><span class="ok">OK</span></td>
+<td>docs/15, seção 6</td>
+</tr>
+<tr>
+<td>Kaizen (C12)</td>
+<td><span class="ok">OK</span></td>
+<td>docs/16; horas não medidas, peso qualitativo</td>
+</tr>
+<tr>
+<td>Não se aplicam, declarados</td>
+<td><span class="ok">OK</span></td>
+<td>C2, C3 (sem série), C4 (sem ganho), C10 completo (sem modelo preditivo)</td>
+</tr>
+</tbody>
+</table>
+<h2><span class="n">7</span>O próximo capítulo</h2>
+<p><strong>Entrega:</strong> uma página única, estática, que reúne o relatório, o painel e os slides, em linguagem universal. Com ela, o plano de controle vira a seção "como acompanhar". A página mostra a data da coleta e a versão do código. Antes, resolvo as pendências menores (B4) e peço o seu aval para o primeiro envio ao GitHub, quando o teste automático rodará pela primeira vez. As extensões (SUS, IBGE integrado, idade em faixas, DF no SIOPS) só entram depois do núcleo.</p>
+<h2>Bastidores</h2>
+<table>
+<thead>
+<tr>
+<th>Passo</th>
+<th>Script ou arquivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Verificação de acesso a 2025</td>
+<td><code>scripts/31_teste_acesso_2025.py</code></td>
+</tr>
+<tr>
+<td>Previsões, critérios e desempates</td>
+<td><code>docs/14-control-previsoes-2025.md</code></td>
+</tr>
+<tr>
+<td>Coleta de 2025</td>
+<td><code>scripts/32_coleta_2025_confirmacao.py</code></td>
+</tr>
+<tr>
+<td>Análise de 2025 (aberta uma vez)</td>
+<td><code>scripts/33_control_confirmacao_2025.py</code></td>
+</tr>
+<tr>
+<td>Plano de controle</td>
+<td><code>docs/15-plano-de-controle.md</code></td>
+</tr>
+<tr>
+<td>Kaizen do projeto</td>
+<td><code>docs/16-kaizen-do-projeto.md</code></td>
+</tr>
+<tr>
+<td>Testes e configuração</td>
+<td><code>tests/test_dados.py</code>, <code>config/parametros.json</code>, <code>.github/workflows/testes.yml</code></td>
+</tr>
+<tr>
+<td>Refazer tudo</td>
+<td><code>scripts/run_all.py</code>, <code>requirements.txt</code></td>
+</tr>
+</tbody>
+</table>
+</body></html>

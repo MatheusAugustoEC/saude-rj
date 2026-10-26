@@ -103,3 +103,29 @@ Ressalvas a levar junto: receita mede capacidade financeira, não saúde finance
 - **Capital arrecada por conta própria:** 66% da receita dela é própria, contra 17% a 31% nas demais regiões. Mesmo contra a receita própria, gasta 67% abaixo do previsto (intervalo de previsão não inclui o valor real), em 2024 e em 2023.
 - **Uso ocasional (Censo 2022).** Baixadas Litorâneas: 20 domicílios de uso ocasional por 100 moradores (mediana); Baixada núcleo de 6: 0,2. Mangaratiba 58, Arraial do Cabo 41, São João da Barra 38. Cidades com mais uso ocasional têm mais receita por habitante (Spearman +0,51) e menor fatia da receita na saúde (−0,44). Incluir o indicador aproxima o resíduo das Baixadas Litorâneas de zero (de −15% para −9%), mas não o elimina, e o coeficiente tem intervalo que encosta no zero. Hipótese plausível, não explicação fechada.
 - **SIOPS 2024.** Todas as 92 cidades declaram aplicar mais que o mínimo de 15% (mediana 23,3%; menor valor Paracambi, 15,1%; Mesquita, 15,2%). As 10 que menos gastam aplicam mediana de 20,9% (capital 17,8%): o gasto baixo por habitante não vem de aplicar pouco sobre a base de impostos, e sim de a base ser pequena. Correlação entre o percentual aplicado e o gasto por habitante: +0,15 (sem evidência). Os recursos próprios do SIOPS correspondem a cerca de 37% (mediana) do gasto em saúde do Siconfi; 21% na Baixada (núcleo de 6) e 50% na capital.
+
+## 9. Módulo IBGE (24/10/2026): idade e saneamento (dado declarado, não auditado; associação entre cidades não é causa)
+
+- **Quem tem pouco esgoto não gasta mais com saúde por isso: gasta mais por ter receita alta.** Sem controle, cidades com menos esgoto ligado à rede gastam mais (Spearman −0,27); descontada a receita, o sinal inverte (+3,4% por +10 pp de esgoto, no limite do significativo em 2024 e sem significância em 2023). Cidades de pouco esgoto são as de receita alta (Costa Verde 36% de esgoto, Serrana 54%). Uso: post (contraria o que se espera) e página (dispersão com e sem controle).
+- **A Baixada e a capital têm esgoto quase universal (93% e 95%) e as menores receitas e gastos por habitante;** a Costa Verde tem 36% e a maior receita. Descritivo.
+- **Idade não ajuda a explicar o gasto:** +10 pp de idosos muda o gasto em −3% (IC −26% a +26%): sem poder para decidir, porque a faixa observada (8% a 17,6%) é curta.
+- **A capital é uma das cidades mais envelhecidas (14,5% de 65+, igual ao Noroeste e acima de quase todas) e mesmo assim gasta 39% abaixo do previsto com idade e saneamento no modelo.** Ressalva: a capital atende quem mora em outros municípios.
+- **Pergunta aberta para o módulo SUS:** internações por doenças ligadas ao saneamento inadequado testariam a hipótese de forma mais direta.
+
+
+---
+
+## 10. Curiosidades do Improve (24/10/2026)
+
+Todas valem com a ressalva de sempre: dado declarado e não auditado; gasto não é qualidade; cidade sinalizada é cidade para olhar.
+
+- **Niterói gasta 48% menos do que a receita prevê, nos dois anos** (−47,7% em 2024, −49,0% em 2023), fora do intervalo de previsão sem ela no ajuste. É o desvio mais forte da lista e não tinha aparecido antes, porque no Analyze estava dentro do grupo Resto da Metropolitana. Sem explicação nos dados; achado para auditoria.
+- **São Francisco de Itabapoana também (−42,6% e −41,7%).** Mais uma cidade que persiste nos dois anos.
+- **O desvio das Baixadas Litorâneas é do grupo, não de uma cidade.** Só 1 das 10 fica fora do intervalo sozinha (São Pedro da Aldeia).
+- **Comparar por receita parecida reduz 46% da dispersão** e muda a leitura de 34 das 92 cidades. A Baixada deixa de parecer 33% abaixo e passa a 15%.
+- **Somar visitantes à população piora o resíduo das Baixadas Litorâneas** (de −15% para −18%), porque a elasticidade é menor que 1. A ideia de "corrigir a base" não funciona; usar o uso ocasional como controle (H7) funciona em parte.
+- **A elasticidade dos repasses dentro da cidade (0,28) é menos da metade da de entre cidades (0,68).** Um teste de estresse com 0,68 exagera.
+- **22 municípios declaram pessoal acima do limite prudencial** (11 acima do máximo); 3 estão marcados como "RCL atípica". O estado declara 46,8%, pouco acima do prudencial (46,5%).
+- **Nenhum município chega a 80% do limite de dívida; 53 têm dívida líquida negativa.** O estado declara 211,3% da RCL.
+- **A folga sobre os 15% da saúde vai de 0,1 ponto (Paracambi, Engenheiro Paulo de Frontin) até uma mediana de 8,3 pontos.** A capital aplica 17,8%, folga de R$ 596 milhões.
+- **Três palpites meus erraram** (Baixadas Litorâneas sobrerrepresentadas, folga em até 6 cidades, pessoal acima do prudencial em até 10). Vale mostrar: registrar o palpite antes é o que dá valor ao erro.

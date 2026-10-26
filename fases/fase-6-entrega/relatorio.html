@@ -1,0 +1,215 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>/* Estilo dos relatórios de fase — metodo-dmaic.
+   Usado por gerar_pdf.py. O destaque (--acc) pode ser trocado por projeto. */
+:root{
+  --acc:#2F5D8A; --acc-soft:#E8EFF6;
+  --ink:#1B2430; --ink-2:#44505E; --muted:#6B7785; --line:#DCE2E8; --paper:#FFFFFF;
+  --ach:#2F5D8A;  --ach-bg:#EAF1F8;   /* achado */
+  --dec:#2E7D5B;  --dec-bg:#E9F5EF;   /* decisão */
+  --tec:#5B6573;  --tec-bg:#F2F4F6;   /* detalhe técnico */
+  --cui:#B26B00;  --cui-bg:#FFF4E0;   /* cuidado / limitação */
+  --fal:#B3261E;  --fal-bg:#FCEBEA;   /* falha */
+}
+@page{ size:A4; margin:18mm 17mm 20mm }   /* rodapé com projeto e página: gerar_pdf.py */
+*{ box-sizing:border-box }
+html{ -webkit-print-color-adjust:exact; print-color-adjust:exact }
+body{ margin:0; background:var(--paper); color:var(--ink);
+  font:10.5pt/1.55 "Inter","Segoe UI",system-ui,sans-serif; hyphens:auto }
+
+/* cabeçalho */
+.cab{ border-left:4px solid var(--acc); padding:2mm 0 2mm 5mm; margin-bottom:6mm }
+.cab .fase{ font:600 8pt "IBM Plex Mono",monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--acc) }
+.cab .meta{ font-size:8.5pt; color:var(--muted); margin-top:1mm }
+h1{ font:700 20pt/1.18 "Inter",sans-serif; letter-spacing:-.01em; margin:1.5mm 0 0 }
+
+/* títulos-mensagem */
+h2{ font:700 13.5pt/1.25 "Inter",sans-serif; margin:8mm 0 2.5mm; color:var(--ink);
+  break-after:avoid; padding-top:3mm; border-top:1px solid var(--line) }
+h2 .n{ font:500 9pt "IBM Plex Mono",monospace; color:var(--acc); margin-right:2mm; vertical-align:2px }
+h3{ font:650 11.5pt/1.3 "Inter",sans-serif; margin:5mm 0 1.5mm; color:var(--ink); break-after:avoid }
+p{ margin:0 0 2.6mm }
+strong{ color:var(--ink) }
+a{ color:var(--acc) }
+code{ font:.88em "IBM Plex Mono",monospace; background:var(--tec-bg); padding:.1em .35em; border-radius:3px }
+
+/* número em destaque */
+.numero{ display:flex; align-items:baseline; gap:4mm; background:var(--acc-soft);
+  border-radius:6px; padding:4mm 5mm; margin:3mm 0 5mm; break-inside:avoid }
+.numero b{ font:700 30pt/1 "Inter",sans-serif; color:var(--acc); letter-spacing:-.02em; white-space:nowrap }
+.numero span{ font-size:10.5pt; color:var(--ink-2); line-height:1.4 }
+.numeros{ display:grid; grid-template-columns:repeat(auto-fit,minmax(40mm,1fr)); gap:3mm; margin:3mm 0 5mm }
+.numeros .numero{ display:block; margin:0 }
+.numeros .numero b{ display:block; font-size:20pt; margin-bottom:1.5mm }
+
+/* resumo */
+.resumo{ background:#F7F9FB; border:1px solid var(--line); border-radius:6px; padding:4mm 5mm; margin:0 0 5mm }
+.resumo p:last-child{ margin:0 }
+
+/* caixas (a partir de > [!TIPO] no markdown) */
+.caixa{ border-left:4px solid; border-radius:0 6px 6px 0; padding:3mm 4.5mm; margin:3mm 0 4mm; break-inside:avoid }
+.caixa .rot{ font:600 7.5pt "IBM Plex Mono",monospace; letter-spacing:.14em; text-transform:uppercase; margin-bottom:1.2mm }
+.caixa p:last-child{ margin-bottom:0 }
+.caixa.achado{ border-color:var(--ach); background:var(--ach-bg) } .caixa.achado .rot{ color:var(--ach) }
+.caixa.decisao{ border-color:var(--dec); background:var(--dec-bg) } .caixa.decisao .rot{ color:var(--dec) }
+.caixa.tecnico{ border-color:var(--tec); background:var(--tec-bg); font-size:9.5pt } .caixa.tecnico .rot{ color:var(--tec) }
+.caixa.cuidado{ border-color:var(--cui); background:var(--cui-bg) } .caixa.cuidado .rot{ color:var(--cui) }
+.caixa.falha{ border-color:var(--fal); background:var(--fal-bg) } .caixa.falha .rot{ color:var(--fal) }
+
+/* figuras */
+figure,p>img:only-child{ margin:3mm 0 5mm; break-inside:avoid }
+img{ max-width:100%; height:auto; display:block; margin:0 auto; border-radius:4px }
+figcaption,.legenda{ font-size:9pt; color:var(--muted); margin-top:1.5mm; text-align:left }
+
+/* tabelas */
+table{ width:100%; border-collapse:collapse; margin:2mm 0 5mm; font-size:9pt; break-inside:auto }
+thead{ display:table-header-group }
+tr{ break-inside:avoid }
+th{ text-align:left; font:600 7.5pt "IBM Plex Mono",monospace; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); border-bottom:1.5px solid var(--ink); padding:1.8mm 2.5mm 1.8mm 0 }
+td{ border-bottom:1px solid var(--line); padding:1.8mm 2.5mm 1.8mm 0; vertical-align:top }
+
+/* veredito do tollgate */
+.ok,.ressalva,.falha-t,.desc,.neutro{ font:600 7.5pt "IBM Plex Mono",monospace; padding:.6mm 2mm; border-radius:20px; white-space:nowrap }
+.ok{ background:var(--dec-bg); color:var(--dec) }
+.ressalva{ background:var(--cui-bg); color:var(--cui) }
+.falha-t{ background:var(--fal-bg); color:var(--fal) }
+.desc{ background:var(--ach-bg); color:var(--ach) }
+.neutro{ background:var(--tec-bg); color:var(--tec) }
+
+/* bastidores: menor, no fim */
+.bastidores{ font-size:9pt; color:var(--ink-2) }
+ul,ol{ margin:0 0 3mm; padding-left:5mm } li{ margin-bottom:1mm }
+blockquote{ margin:3mm 0; padding-left:4mm; border-left:3px solid var(--line); color:var(--ink-2) }
+</style></head><body>
+<header class="cab"><div class="fase"></div><h1>A página de entrega está pronta: seis partes, 92 cidades, um comando para refazer</h1><div class="meta"><strong>Fase 6 · Entrega, Saúde fiscal do Rio de Janeiro · Siconfi 2023 a 2025 · 26/10/2026</strong></div></header>
+<div class="caixa tecnico">
+<div class="rot">Detalhe técnico</div>
+<p>Os dados são declarados pelas prefeituras e pelo estado, e não foram auditados. Gasto em saúde por habitante não mede qualidade nem necessidade. Cidade sinalizada é cidade para olhar, não cidade com problema.</p>
+</div>
+<div class="numero"><b>6 partes</b><span>numa só página estática (pagina/index.html), com 28 itens para baixar, 12 slides e 21 testes que passam</span></div>
+
+<div class="resumo">
+<p><strong>Em três linhas.</strong> Construí a página que você aprovou nos rascunhos: Início, Cidade, Gestor, Controle e auditoria, Como cheguei aqui e Biblioteca. Todo número vem de um arquivo do pipeline (<code>dados_tratados/pagina_dados.json</code>, gerado pelo script 35). Conferi a página rodando, em duas rodadas, e corrigi oito defeitos; o que não consegui conferir está listado abaixo.</p>
+</div>
+<h2><span class="n">1</span>O que foi entregue</h2>
+<table>
+<thead>
+<tr>
+<th>Parte</th>
+<th>O que a pessoa faz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Início</td>
+<td>Vê a posição do estado (27º de 27), a variação entre cidades (7,2×), o mapa do Brasil com seletor de indicador e ranking dos 27 estados, curiosidades e o botão de mais itens</td>
+</tr>
+<tr>
+<td>Cidade</td>
+<td>Digita ou escolhe a cidade, ou clica no mapa; compara com cidades parecidas, cidades escolhidas, estado ou mediana; troca para a visão por Região, com mapa dos 10 grupos</td>
+</tr>
+<tr>
+<td>Gestor</td>
+<td>Cidades parecidas, relação receita × gasto, simulador de repasses e receita própria, folga sobre o mínimo de 15%, repasses por região, limites da LRF, planilha .xlsx</td>
+</tr>
+<tr>
+<td>Controle e auditoria</td>
+<td>Triagem de 2023 a 2025, chegada do balanço de 2025, conferência SIOPS × Siconfi, pergunta aberta das Baixadas Litorâneas, limites fiscais</td>
+</tr>
+<tr>
+<td>Como cheguei aqui</td>
+<td>Uma tela por etapa (Definir a Kaizen), com SIPOC, mapa do processo, diagrama das causas e vereditos</td>
+</tr>
+<tr>
+<td>Biblioteca</td>
+<td>28 itens com busca e filtros (para quem, tipo, etapa, ano), .zip com tudo, apresentação .pptx de 12 slides e citação para copiar</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Como refazer.</strong> <code>python -X utf8 scripts/35_dados_pagina.py</code> e depois <code>scripts/36_gerar_pagina.py</code>. Os dois entram no <code>run_all.py</code>, e o <code>tests/test_pagina.py</code> confere que os números da página são os do pipeline, que os arquivos existem e que o .zip e a planilha abrem.</p>
+<h2><span class="n">2</span>O que acrescentei além do combinado</h2>
+<p>Você aprovou todas as sugestões; a lista abaixo é para ficar registrada, e você decide se alguma sai.</p>
+<ul>
+<li>Busca de cidade nas primeiras telas, e o clique no mapa que atualiza tudo.</li>
+<li>Cartões "Você sabia?" e o botão de curiosidades, insights e alertas em cada parte, com fonte e janela de tempo em cada item.</li>
+<li>O simulador de repasses e receita própria, com faixa de −50% a +50%, faixa coberta de −30% a +30% e dois modos de leitura (entre cidades e de um ano para o outro).</li>
+<li>Uma tela por etapa em "Como cheguei aqui", com o diagrama das causas montado a partir dos resultados (e dito assim na página).</li>
+<li>A visão por Região, com os mapas do Brasil e do estado do Rio desenhados a partir das malhas do IBGE (guardadas em <code>dados_brutos/malha_ibge_api/</code>, com SHA-256).</li>
+</ul>
+<h2><span class="n">3</span>Auditoria da página rodando</h2>
+<p>Abri a página no Edge, passei por todas as seis partes, em tela larga (1280 px) e de celular (390 px), nos temas claro e escuro, e cliquei nos controles, filtros, tags removíveis e downloads.</p>
+<table>
+<thead>
+<tr>
+<th>Rodada</th>
+<th>O que encontrei</th>
+<th>O que fiz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Erro de console: a capital se chama "Rio de Janeiro (capital)" no dado, e a busca pelo nome falhava</td>
+<td>Busca pelo código do IBGE</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Rótulo do Acre cortado no mapa do Brasil</td>
+<td>Margem maior no mapa</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Gráfico de barras gigante em tela larga</td>
+<td>Largura máxima dos gráficos</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Sensibilidade de 0,81 (ajuste na página) contra 0,80 no resto do projeto</td>
+<td>O texto usa o número do pipeline; a reta é só o desenho</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Frase "gasta −31% da mediana"</td>
+<td>"gasta 31% abaixo da mediana"</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Grupo "Baixada" na cor vermelha, a mesma da seleção</td>
+<td>Trocado por âmbar; outras duas cores ajustadas</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Menu do cabeçalho ocupava meia tela no celular</td>
+<td>Menu em linha, com rolagem</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Linha selecionada com contraste baixo no tema escuro</td>
+<td>Cor do texto própria para o vermelho do tema</td>
+</tr>
+</tbody>
+</table>
+<p>A segunda rodada terminou sem achado bloqueante. Verifiquei: console sem erro, sem rolagem horizontal em 390 px, .xlsx abre (4 abas), .pptx tem 12 slides, .zip tem 27 arquivos sem nome repetido.</p>
+<p><strong>O que a auditoria não cobriu (limites):</strong></p>
+<ul>
+<li>Não abri o .pptx no PowerPoint nem o .xlsx no Excel: só conferi a estrutura dos arquivos.</li>
+<li>Não testei num celular de verdade, só numa janela de 390 px.</li>
+<li>A paleta foi conferida com cálculo próprio de daltonismo (simulação de Machado e distância no OKLab), não com o validador oficial da skill, que precisa de Node. As 10 cores dos grupos da região têm número no mapa como segundo código, porque algumas ficam abaixo da distância ideal.</li>
+<li>O mapa só funciona por clique ou toque; a lista ao lado é a alternativa por teclado.</li>
+<li>Páginas e arquivos ainda <strong>não foram publicados</strong>: o GitHub Pages só entra depois do seu aval, e o teste automático do GitHub ainda não rodou lá.</li>
+</ul>
+<h2><span class="n">4</span>Textos que você precisa conferir</h2>
+<ul>
+<li>A apresentação .pptx é simples (título, um número, uma frase e, no primeiro slide, um gráfico). Os 12 títulos são os que você aprovou.</li>
+<li>O diagrama das causas e a tabela do Improve foram <strong>montados a partir dos resultados</strong> das fases; a página diz isso. Não há 5 porquês, Pareto nem Ishikawa feitos antes.</li>
+<li>A citação sugerida usa o nome do usuário do GitHub (MatheusAugustoEC). Se preferir o seu nome completo, é uma linha no script 36.</li>
+</ul>
+<h2><span class="n">5</span>Para o tollgate</h2>
+<ol>
+<li>A página está como você imaginou? Algo a tirar da lista da seção 2?</li>
+<li>Posso seguir para a <strong>Banca</strong> (revisão independente, skill banca-dmaic) antes de qualquer publicação?</li>
+<li>Quando quiser publicar, me avise: eu listo os arquivos, e você dá o aval do primeiro push.</li>
+</ol>
+<p><strong>Marco 3.</strong> A página é um marco: posso preparar um rascunho de post para o LinkedIn quando você quiser.</p>
+</body></html>

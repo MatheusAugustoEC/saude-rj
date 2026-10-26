@@ -1,0 +1,11 @@
+﻿testado_em,base,url,status,bytes_lidos,trecho,erro
+2026-10-24T21:56:57,"TABNET: leitos CNES (RJ, por município)",http://tabnet.datasus.gov.br/cgi/deftohtm.exe?cnes/cnv/leiintrj.def,200,61412, TabNet Win32 3.3: CNES - Recursos F&iacute;sicos - Hospitalar - Leitos de interna&ccedil;&atilde;o - Rio de Janeiro Informa&ccedil;&otilde;es de Sa&uacute;de D,
+2026-10-24T21:56:57,"TABNET: internações SIH (RJ, local de internação)",http://tabnet.datasus.gov.br/cgi/deftohtm.exe?sih/cnv/nirj.def,200,88115, TabNet Win32 3.3: Morbidade Hospitalar do SUS - por local de interna&ccedil;&atilde;o - Rio de Janeiro Informa&ccedil;&otilde;es de Sa&uacute;de DATASUS &nbsp;,
+2026-10-24T21:56:57,TABNET: página inicial,http://tabnet.datasus.gov.br/,200,361, Informações de Saúde ,
+2026-10-24T21:56:57,API de dados abertos: leitos CNES,https://apidadosabertos.saude.gov.br/cnes/leitos?limit=2&offset=0,,0,,Remote end closed connection without response
+2026-10-24T21:56:57,API de dados abertos: estabelecimentos CNES,https://apidadosabertos.saude.gov.br/cnes/estabelecimentos?limit=1&offset=0,,0,,Remote end closed connection without response
+2026-10-24T21:56:57,OpenDataSUS: página inicial,https://opendatasus.saude.gov.br/,,0,,Remote end closed connection without response
+2026-10-24T21:56:57,OpenDataSUS: busca por leitos,https://opendatasus.saude.gov.br/dataset?q=leitos,,0,,Remote end closed connection without response
+2026-10-24T21:56:57,"FTP DATASUS: CNES, leitos (LT)",ftp://ftp.datasus.gov.br/dissemin/publicos/CNES/200508_/Dados/LT/,,300000,06-04-14 06:59PM 2756 LTAC0510.dbc 06-04-14 06:59PM 2767 LTAC0511.dbc 06-04-14 06:59PM 2763 LTAC0512.dbc 06-04-14 06:59PM 2762 LTAC0601.dbc 06-04-14 06:59PM 277,
+2026-10-24T21:56:57,FTP DATASUS: SIH reduzida (RD),ftp://ftp.datasus.gov.br/dissemin/publicos/SIHSUS/200801_/Dados/,,300000,03-10-20 02:43PM 196476 CHBR1901.dbc 03-10-20 02:43PM 196287 CHBR1902.dbc 03-10-20 02:43PM 196081 CHBR1903.dbc 03-10-20 02:43PM 196105 CHBR1904.dbc 03-10-20 02:,
+2026-10-24T21:56:57,CNES: página inicial,https://cnes.datasus.saude.gov.br/,,0,,<urlopen error [Errno 11001] getaddrinfo failed>

@@ -1,0 +1,81 @@
+/* Estilo dos relatórios de fase — metodo-dmaic.
+   Usado por gerar_pdf.py. O destaque (--acc) pode ser trocado por projeto. */
+:root{
+  --acc:#2F5D8A; --acc-soft:#E8EFF6;
+  --ink:#1B2430; --ink-2:#44505E; --muted:#6B7785; --line:#DCE2E8; --paper:#FFFFFF;
+  --ach:#2F5D8A;  --ach-bg:#EAF1F8;   /* achado */
+  --dec:#2E7D5B;  --dec-bg:#E9F5EF;   /* decisão */
+  --tec:#5B6573;  --tec-bg:#F2F4F6;   /* detalhe técnico */
+  --cui:#B26B00;  --cui-bg:#FFF4E0;   /* cuidado / limitação */
+  --fal:#B3261E;  --fal-bg:#FCEBEA;   /* falha */
+}
+@page{ size:A4; margin:18mm 17mm 20mm }   /* rodapé com projeto e página: gerar_pdf.py */
+*{ box-sizing:border-box }
+html{ -webkit-print-color-adjust:exact; print-color-adjust:exact }
+body{ margin:0; background:var(--paper); color:var(--ink);
+  font:10.5pt/1.55 "Inter","Segoe UI",system-ui,sans-serif; hyphens:auto }
+
+/* cabeçalho */
+.cab{ border-left:4px solid var(--acc); padding:2mm 0 2mm 5mm; margin-bottom:6mm }
+.cab .fase{ font:600 8pt "IBM Plex Mono",monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--acc) }
+.cab .meta{ font-size:8.5pt; color:var(--muted); margin-top:1mm }
+h1{ font:700 20pt/1.18 "Inter",sans-serif; letter-spacing:-.01em; margin:1.5mm 0 0 }
+
+/* títulos-mensagem */
+h2{ font:700 13.5pt/1.25 "Inter",sans-serif; margin:8mm 0 2.5mm; color:var(--ink);
+  break-after:avoid; padding-top:3mm; border-top:1px solid var(--line) }
+h2 .n{ font:500 9pt "IBM Plex Mono",monospace; color:var(--acc); margin-right:2mm; vertical-align:2px }
+h3{ font:650 11.5pt/1.3 "Inter",sans-serif; margin:5mm 0 1.5mm; color:var(--ink); break-after:avoid }
+p{ margin:0 0 2.6mm }
+strong{ color:var(--ink) }
+a{ color:var(--acc) }
+code{ font:.88em "IBM Plex Mono",monospace; background:var(--tec-bg); padding:.1em .35em; border-radius:3px }
+
+/* número em destaque */
+.numero{ display:flex; align-items:baseline; gap:4mm; background:var(--acc-soft);
+  border-radius:6px; padding:4mm 5mm; margin:3mm 0 5mm; break-inside:avoid }
+.numero b{ font:700 30pt/1 "Inter",sans-serif; color:var(--acc); letter-spacing:-.02em; white-space:nowrap }
+.numero span{ font-size:10.5pt; color:var(--ink-2); line-height:1.4 }
+.numeros{ display:grid; grid-template-columns:repeat(auto-fit,minmax(40mm,1fr)); gap:3mm; margin:3mm 0 5mm }
+.numeros .numero{ display:block; margin:0 }
+.numeros .numero b{ display:block; font-size:20pt; margin-bottom:1.5mm }
+
+/* resumo */
+.resumo{ background:#F7F9FB; border:1px solid var(--line); border-radius:6px; padding:4mm 5mm; margin:0 0 5mm }
+.resumo p:last-child{ margin:0 }
+
+/* caixas (a partir de > [!TIPO] no markdown) */
+.caixa{ border-left:4px solid; border-radius:0 6px 6px 0; padding:3mm 4.5mm; margin:3mm 0 4mm; break-inside:avoid }
+.caixa .rot{ font:600 7.5pt "IBM Plex Mono",monospace; letter-spacing:.14em; text-transform:uppercase; margin-bottom:1.2mm }
+.caixa p:last-child{ margin-bottom:0 }
+.caixa.achado{ border-color:var(--ach); background:var(--ach-bg) } .caixa.achado .rot{ color:var(--ach) }
+.caixa.decisao{ border-color:var(--dec); background:var(--dec-bg) } .caixa.decisao .rot{ color:var(--dec) }
+.caixa.tecnico{ border-color:var(--tec); background:var(--tec-bg); font-size:9.5pt } .caixa.tecnico .rot{ color:var(--tec) }
+.caixa.cuidado{ border-color:var(--cui); background:var(--cui-bg) } .caixa.cuidado .rot{ color:var(--cui) }
+.caixa.falha{ border-color:var(--fal); background:var(--fal-bg) } .caixa.falha .rot{ color:var(--fal) }
+
+/* figuras */
+figure,p>img:only-child{ margin:3mm 0 5mm; break-inside:avoid }
+img{ max-width:100%; height:auto; display:block; margin:0 auto; border-radius:4px }
+figcaption,.legenda{ font-size:9pt; color:var(--muted); margin-top:1.5mm; text-align:left }
+
+/* tabelas */
+table{ width:100%; border-collapse:collapse; margin:2mm 0 5mm; font-size:9pt; break-inside:auto }
+thead{ display:table-header-group }
+tr{ break-inside:avoid }
+th{ text-align:left; font:600 7.5pt "IBM Plex Mono",monospace; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--muted); border-bottom:1.5px solid var(--ink); padding:1.8mm 2.5mm 1.8mm 0 }
+td{ border-bottom:1px solid var(--line); padding:1.8mm 2.5mm 1.8mm 0; vertical-align:top }
+
+/* veredito do tollgate */
+.ok,.ressalva,.falha-t,.desc,.neutro{ font:600 7.5pt "IBM Plex Mono",monospace; padding:.6mm 2mm; border-radius:20px; white-space:nowrap }
+.ok{ background:var(--dec-bg); color:var(--dec) }
+.ressalva{ background:var(--cui-bg); color:var(--cui) }
+.falha-t{ background:var(--fal-bg); color:var(--fal) }
+.desc{ background:var(--ach-bg); color:var(--ach) }
+.neutro{ background:var(--tec-bg); color:var(--tec) }
+
+/* bastidores: menor, no fim */
+.bastidores{ font-size:9pt; color:var(--ink-2) }
+ul,ol{ margin:0 0 3mm; padding-left:5mm } li{ margin-bottom:1mm }
+blockquote{ margin:3mm 0; padding-left:4mm; border-left:3px solid var(--line); color:var(--ink-2) }
