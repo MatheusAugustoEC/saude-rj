@@ -63,14 +63,17 @@ function geraPptx() {
 const ROTAS = { inicio: viewInicio, cidade: viewCidade, gestor: viewGestor, controle: viewControle, como: viewComo, biblioteca: viewBiblioteca };
 const TITULOS = { inicio: "Início", cidade: "Cidade", gestor: "Gestor", controle: "Controle e auditoria", como: "Como cheguei aqui", biblioteca: "Biblioteca" };
 function rota() {
-  const k = (location.hash || "#inicio").slice(1); const r = ROTAS[k] ? k : "inicio";
+  const k = lerHash(); const r = ROTAS[k] ? k : "inicio";
   $$("nav a").forEach(a => a.removeAttribute("aria-current")); const a = $(`nav a[href="#${r}"]`); if (a) a.setAttribute("aria-current", "page");
   const el = $("#conteudo"); el.innerHTML = ""; ROTAS[r](el); document.title = TITULOS[r] + " · Saúde fiscal do Rio de Janeiro"; window.scrollTo(0, 0); tip.hidden = true;
 }
+const ICONE = { sol: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>', lua: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>' };
 function iniciaTema() {
-  const b = $("#tema"); let t = ""; try { t = localStorage.getItem("tema") || ""; } catch (e) { }
-  const ap = () => { if (t) document.documentElement.setAttribute("data-theme", t); else document.documentElement.removeAttribute("data-theme"); b.textContent = t === "dark" ? "Tema: escuro" : t === "light" ? "Tema: claro" : "Tema: automático"; try { localStorage.setItem("tema", t); } catch (e) { } };
-  b.onclick = () => { t = t === "" ? "light" : t === "light" ? "dark" : ""; ap(); const h = (location.hash || "#inicio").slice(1); if (ROTAS[h]) rota(); }; ap();
+  const b = $("#tema"); let t = "light"; try { t = localStorage.getItem("tema") === "dark" ? "dark" : "light"; } catch (e) { }
+  const ap = () => { document.documentElement.setAttribute("data-theme", t); b.innerHTML = t === "dark" ? ICONE.sol : ICONE.lua; b.setAttribute("aria-label", t === "dark" ? "Mudar para o tema claro" : "Mudar para o tema escuro"); try { localStorage.setItem("tema", t); } catch (e) { } };
+  b.onclick = () => { t = t === "dark" ? "light" : "dark"; ap(); };
+  ap();
 }
-$("#subbar").innerHTML = `Siconfi · 92 cidades + estado · 2023 a 2025 · Dados declarados, não auditados · Versão ${D.meta.versao} · ${D.meta.data} · <a href="${D.meta.repositorio}" target="_blank" rel="noopener">Repositório</a>`;
+$("#subbar").innerHTML = `Siconfi · 92 cidades + estado · 2023 a 2025 · Dados declarados, não auditados · Versão ${D.meta.versao} · ${D.meta.data} · <a href="${D.meta.repositorio}" target="_blank" rel="noopener">Repositório</a> · <a href="#glossario" id="abreGlos">Glossário</a>`;
+montaGlossario(); $("#abreGlos").onclick = e => { e.preventDefault(); const g = $("#glossario"); g.open = true; g.scrollIntoView(); };
 window.onhashchange = rota; iniciaTema(); rota();

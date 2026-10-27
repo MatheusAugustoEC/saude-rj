@@ -61,6 +61,18 @@ A segunda rodada terminou sem achado bloqueante. Verifiquei: console sem erro, s
 - O mapa só funciona por clique ou toque; a lista ao lado é a alternativa por teclado.
 - Páginas e arquivos ainda **não foram publicados**: o GitHub Pages só entra depois do seu aval, e o teste automático do GitHub ainda não rodou lá.
 
+## Adendo de 27/10/2026: segunda rodada de ajustes e auditoria
+
+Depois de usar a página, o responsável pediu correções e uma auditoria completa (olhar de gestor, controlador, auditor, especialista e recrutador). Tudo foi feito e reauditado; a seção 3 acima descreve a primeira auditoria e este adendo a substitui onde houver diferença.
+
+**Ajustes:** Início só com estados e Brasil; Cidade em modo Região com clique que escolhe a região inteira, ranking das cidades da região em cima e ranking das 8 regiões embaixo; escolha de várias cidades dentro de "Comparar com"; Gestor com filtros em cascata (Região, depois Cidade, com "Todas"), faixas de receita em reais e planilha .xlsx que segue os filtros; simulador sem a linha sobreposta, com cartões titulados e o cartão "Folga estimada no cenário"; Controle e auditoria com fonte sob cada tabela e gráfico, balanço (DCA) dito, SIOPS em "R$ 37 para cada R$ 100" (mediana 0,37) e ficha de controle por cidade ou região; Biblioteca com descrições em forma de história; tema com ícone de sol e lua, sempre abrindo no claro.
+
+**Acrescentado além do combinado:** glossário com 15 termos, link compartilhável (estado da tela no endereço) e a troca de "base de impostos" por "base de cálculo (impostos e transferências constitucionais)". A despesa em saúde é a **empenhada** (RREO Anexo 02 e DCA I-E), e a página não a chama de liquidada.
+
+**Auditoria automática (Edge, 1280 e 390 px, claro e escuro):** 0 achados em 60 verificações, entre elas: downloads .xlsx por região, por região mais faixa e por cidade; 27 links da Biblioteca existentes; imagens carregando; campos com rótulo; nenhum "undefined" ou "NaN" nas seis partes; console sem erro. Testes do projeto: 21 passam.
+
+**Limites que continuam:** nada testado em celular real; .pptx e .xlsx não abertos no Office; validador oficial de paleta não rodado (precisa de Node); página ainda não publicada.
+
 ## 4. Textos que você precisa conferir
 
 - A apresentação .pptx é simples (título, um número, uma frase e, no primeiro slide, um gráfico). Os 12 títulos são os que você aprovou.

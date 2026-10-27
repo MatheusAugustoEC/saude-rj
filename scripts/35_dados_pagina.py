@@ -33,6 +33,11 @@ GRUPOS = [
 ]
 
 
+KNOMES = {"K1": "A receita pesa menos que proporcionalmente no gasto (sensibilidade abaixo de 1)", "K2": "Resto da Metropolitana, com a mesma receita, sem diferença conclusiva", "K3": "A capital gasta abaixo do que a receita indica",
+          "K4": "O gasto segue os repasses mais que a receita própria", "K5": "Triagem: as cidades sinalizadas se repetem em 2025", "K6": "Comparar por receita parecida lê melhor que comparar por região",
+          "K7": "Os repasses movem o gasto dentro da própria cidade", "K8": "Baixadas Litorâneas gastam menos do que a receita indica", "K9": "Somar visitantes à população piora o resultado das Baixadas Litorâneas"}
+
+
 def pt(x, casas=0):
     s = f"{x:,.{casas}f}"
     return s.replace(",", "§").replace(".", ",").replace("§", ".")
@@ -140,6 +145,7 @@ def main():
     e_rep = (round(c24.loc["x_transf", "coef"], 3), round(c24.loc["x_transf", "ic_baixo"], 3), round(c24.loc["x_transf", "ic_alto"], 3))
     e_prop = (round(c24.loc["x_propria", "coef"], 3), round(c24.loc["x_propria", "ic_baixo"], 3), round(c24.loc["x_propria", "ic_alto"], 3))
     elast = {a: round(float(coef[(coef.ano == a) & (coef.modelo == "A total")].coef.iloc[0]), 2) for a in (2023, 2024)}
+    sp25 = re.search(r"Spearman dos resíduos 2024 x 2025 ([+\-][0-9.]+) \(n=86\)", (T / "control_2025_saida.txt").read_text(encoding="utf-8")).group(1).replace(".", ",")
     kres = le("control_2025_resultados.csv")
     n_sust = int((kres.final == "sustenta").sum())
     assert (len(kres), n_sust) == (9, 8)
@@ -157,13 +163,24 @@ def main():
     bl = cid[cid.grupo == "Baixadas Litorâneas"]
     estr = le("improve_r4_estresse.csv")
 
+    # ---------- estados (Início fala só de estados) ----------
+    top_gh = uf.loc[uf.saude_por_hab.idxmax()]
+    top_pd = uf.loc[uf.saude_pct_despesa.idxmax()]
+    med_uf_gh, med_uf_pd = float(uf.saude_por_hab.median()), float(uf.saude_pct_despesa.median())
+    pos_rh = int((uf.receita_por_hab > rj.receita_por_hab).sum() + 1)
+    lx, ly = np.log(uf.receita_por_hab.to_numpy()), np.log(uf.saude_por_hab.to_numpy())
+    r2_uf = float(np.corrcoef(lx, ly)[0, 1] ** 2)
+    estado_rj["pos_rh"] = pos_rh
+    faixas = [{"fx": int(f), "min": round(float(g.receita_por_hab.min()), 0), "max": round(float(g.receita_por_hab.max()), 0), "n": int(len(g))} for f, g in cid.groupby("faixa")]
+    assert [x["fx"] for x in faixas] == [0, 1, 2, 3, 4] and sum(x["n"] for x in faixas) == 92
+
     glob = {
         "n_cidades": 92, "n_estados": 27, "pop_uf": pop_uf, "mediana_gh": round(med, 1), "menor_gh": round(menor, 1), "maior_gh": round(maior, 1), "razao_extremos": round(maior / menor, 2),
         "menor_nome": cid.loc[cid.saude_por_hab.idxmin(), "nome"], "maior_nome": cid.loc[cid.saude_por_hab.idxmax(), "nome"],
         "pop_abaixo_mediana_pct": round(abaixo_pop, 1), "aplicado_mediana": round(float(cid.aplicado_pct.median()), 1), "aplicado_min": round(float(cid.aplicado_pct.min()), 2),
         "r2_total": round(float(t24.r2), 3), "elast_total": elast, "elast_repasses": e_rep, "elast_propria": e_prop, "k_sustentam": n_sust, "k_total": 9,
         "dif_regiao": pares_reg, "dif_pares": pares_par, "pares_reducao": pares_red, "folga_menor1": folga1, "folga_menor3": folga3, "acima_prudencial": acima_prud, "siops_fora": int(cid.fora6.sum()),
-        "fatia_mediana": round(float(cid.fatia.median()), 1),
+        "fatia_mediana": round(float(cid.fatia.median()), 1), "faixas": faixas, "siops_razao_mediana": round(float(cid.razao.median()), 2),
         "estresse_ano_a_ano": {"rep": d_rep, "prop": d_prop},
         "estresse_tabela": estr[["queda_repasses", "cenario", "elasticidade", "queda_gasto_pct"]].round(3).to_dict("records"),
     }
@@ -175,18 +192,27 @@ def main():
     fi = "dados_tratados/indicadores_2024.csv"
     cur = [
         # início
-        ("inicio", I, "A cidade típica não é a pessoa típica", f"{pt(abaixo_pop)}%".replace(",0%", "%"), f"das pessoas moram em cidades que gastam menos que a cidade do meio (R$ {pt(med)} por habitante).", "2024", fi, 0),
-        ("inicio", I, "Onde estão os que menos gastam", f"{n_metro_10} em 10", "dos dez que menos gastam por habitante estão na Região Metropolitana, capital incluída.", "2024", fi, 1),
-        ("inicio", I, "Vizinhos, mundos diferentes", f"{pt(arraial.saude_por_hab / spa.saude_por_hab, 1)}×", f"Arraial do Cabo (R$ {pt(arraial.saude_por_hab)}) e São Pedro da Aldeia (R$ {pt(spa.saude_por_hab)}) ficam na mesma região.", "2024", fi, 0),
-        ("inicio", I, "Falta de receita, não de prioridade", f"{len(inter)} de 5", "das cidades que menos arrecadam por habitante estão entre as dez que menos gastam em saúde.", "2024", fi, 0),
-        ("inicio", I, "Saneamento muda muito", f"{pt(saneam_min)}% a {pt(saneam_max)}%", "dos domicílios ligados à rede de esgoto, de uma cidade a outra (Censo 2022).", "Censo 2022", "dados_tratados/analyze_ibge_indicadores.csv", 0),
-        ("inicio", I, "Mínimo da lei", "92 de 92", f"cidades aplicam ao menos 15% em saúde (SIOPS); a cidade do meio aplica {pt(glob['aplicado_mediana'], 1)}%.", "2024", "dados_tratados/improve_r5_r6_siops.csv", 0),
-        ("inicio", E, "A receita explica quase tudo", f"≈ {round(glob['r2_total'] * 100)}%", "da diferença de gasto por habitante entre as cidades é explicada pela receita por habitante.", "2024", "dados_tratados/analyze_rodada2_coeficientes.csv", 0),
-        ("inicio", E, "O gasto segue os repasses", f"{pt(e_rep[0], 2)} × {pt(e_prop[0], 2)}", "é a sensibilidade do gasto aos repasses contra a da arrecadação própria.", "2024", "dados_tratados/analyze_rodada2_coeficientes.csv", 0),
-        ("inicio", E, "Idade e saneamento não explicam", "", "Cidades com mais idosos ou menos esgoto não gastam mais, descontada a receita; o padrão bruto vem de a receita ser maior nas cidades com menos esgoto.", "2022–2024", "docs/11-modulo-ibge-resultados.md", 0),
-        ("inicio", A, "O estado e as cidades não se comparam diretamente", f"R$ {pt(estado_rj['gh'])}", f"é o gasto do estado por habitante, menos que o da cidade que menos gasta (R$ {pt(menor)}). Estado e município têm funções diferentes no SUS.", "2024", fi, 1),
-        ("inicio", I, "Baixada: fatia grande, bolso pequeno", f"{pt(bx_pd, 1)}%", f"da despesa da Baixada Fluminense (núcleo de 6) vai para a saúde, mas são só R$ {pt(bx.saude.sum() / bx.populacao.sum())} por habitante.", "2024", fi, 0),
-        ("inicio", I, "Dois destinos para o mesmo dinheiro", f"{pt(nor_gasto)}%", f"é quanto mais por habitante o Noroeste gasta que a Metropolitana sem a capital, com receita por habitante só {pt(nor_rec)}% maior.", "2024", fi, 0),
+        ("cidade", I, "A cidade típica não é a pessoa típica", f"{pt(abaixo_pop)}%".replace(",0%", "%"), f"das pessoas moram em cidades que gastam menos que a cidade do meio (R$ {pt(med)} por habitante).", "2024", fi, 0),
+        ("cidade", I, "Onde estão os que menos gastam", f"{n_metro_10} em 10", "dos dez que menos gastam por habitante estão na Região Metropolitana, capital incluída.", "2024", fi, 1),
+        ("cidade", I, "Vizinhos, mundos diferentes", f"{pt(arraial.saude_por_hab / spa.saude_por_hab, 1)}×", f"Arraial do Cabo (R$ {pt(arraial.saude_por_hab)}) e São Pedro da Aldeia (R$ {pt(spa.saude_por_hab)}) ficam na mesma região.", "2024", fi, 0),
+        ("cidade", I, "Falta de receita, não de prioridade", f"{len(inter)} de 5", "das cidades que menos arrecadam por habitante estão entre as dez que menos gastam em saúde.", "2024", fi, 0),
+        ("cidade", I, "Saneamento muda muito", f"{pt(saneam_min)}% a {pt(saneam_max)}%", "dos domicílios ligados à rede de esgoto, de uma cidade a outra (Censo 2022).", "Censo 2022", "dados_tratados/analyze_ibge_indicadores.csv", 0),
+        ("cidade", I, "Mínimo da lei", "92 de 92", f"cidades aplicam ao menos 15% em saúde (SIOPS); a cidade do meio aplica {pt(glob['aplicado_mediana'], 1)}%.", "2024", "dados_tratados/improve_r5_r6_siops.csv", 0),
+        ("cidade", E, "A receita explica quase tudo", f"≈ {round(glob['r2_total'] * 100)}%", "da diferença de gasto por habitante entre as cidades é explicada pela receita por habitante.", "2024", "dados_tratados/analyze_rodada2_coeficientes.csv", 0),
+        ("cidade", E, "O gasto segue os repasses", f"{pt(e_rep[0], 2)} × {pt(e_prop[0], 2)}", "é a sensibilidade do gasto aos repasses contra a da arrecadação própria.", "2024", "dados_tratados/analyze_rodada2_coeficientes.csv", 0),
+        ("cidade", E, "Idade e saneamento não explicam", "", "Cidades com mais idosos ou menos esgoto não gastam mais, descontada a receita; o padrão bruto vem de a receita ser maior nas cidades com menos esgoto.", "2022–2024", "docs/11-modulo-ibge-resultados.md", 0),
+        ("cidade", A, "O estado e as cidades não se comparam diretamente", f"R$ {pt(estado_rj['gh'])}", f"é o gasto do estado por habitante, menos que o da cidade que menos gasta (R$ {pt(menor)}). Estado e município têm funções diferentes no SUS.", "2024", fi, 1),
+        ("cidade", I, "Baixada: fatia grande, bolso pequeno", f"{pt(bx_pd, 1)}%", f"da despesa da Baixada Fluminense (núcleo de 6) vai para a saúde, mas são só R$ {pt(bx.saude.sum() / bx.populacao.sum())} por habitante.", "2024", fi, 0),
+        ("cidade", I, "Dois destinos para o mesmo dinheiro", f"{pt(nor_gasto)}%", f"é quanto mais por habitante o Noroeste gasta que a Metropolitana sem a capital, com receita por habitante só {pt(nor_rec)}% maior.", "2024", fi, 0),
+        # início (só estados)
+        ("inicio", I, "Arrecada no meio, gasta o mínimo", f"{pos_rh}º e 27º", "é a posição do Rio de Janeiro em receita por habitante e em gasto em saúde por habitante: arrecada no meio da tabela e gasta menos que todos os outros estados.", "2024", fi, 1),
+        ("inicio", I, "O maior e o menor", f"{pt(top_gh.saude_por_hab / rj.saude_por_hab, 1)}×", f"é quanto {top_gh.nome} (R$ {pt(top_gh.saude_por_hab)} por habitante) gasta a mais que o Rio de Janeiro (R$ {pt(rj.saude_por_hab)}).", "2024", fi, 0),
+        ("inicio", I, "Fatia da despesa", f"{pt(rj.saude_pct_despesa, 1)}%", f"da despesa do estado do Rio vai para a saúde, contra {pt(med_uf_pd, 1)}% no estado do meio. A maior fatia é de {top_pd.nome}: {pt(top_pd.saude_pct_despesa, 1)}%.", "2024", fi, 0),
+        ("inicio", I, "O estado do meio", f"R$ {pt(med_uf_gh)}", f"por habitante é o gasto em saúde do estado do meio. O Rio gasta {pt(rj.saude_por_hab / med_uf_gh * 100)}% disso.", "2024", fi, 0),
+        ("inicio", E, "A receita explica parte", f"≈ {round(r2_uf * 100)}%", "da diferença de gasto por habitante entre os 27 estados é explicada pela receita por habitante (conta descritiva, só 27 pontos).", "2024", fi, 0),
+        ("inicio", A, "Dívida acima do limite", f"{pt(estado_rj['dcl'], 1)}%", f"da receita corrente líquida é a dívida líquida declarada pelo estado do Rio, acima do limite de {estado_rj['lim_dcl']}% do Senado.", "2024", fi, 1),
+        ("inicio", A, "O Distrito Federal é diferente", "DF", "reúne as funções de estado e de município; compare o seu valor com cuidado.", "2024", fi, 0),
+        ("inicio", A, "Declarado, não auditado", "Siconfi", "Os valores são os que cada estado declarou ao Tesouro Nacional, sem auditoria. Gasto em saúde não mede qualidade nem necessidade.", "2024", fi, 0),
         # cidade
         ("cidade", I, "A capital", f"R$ {pt(capital.saude_por_hab)}", f"por habitante, cerca de metade da cidade do meio. A fatia da receita dedicada à saúde é {pt(capital.fatia, 1)}%, contra mediana de {pt(glob['fatia_mediana'], 1)}%.", "2024", fi, 1),
         ("cidade", I, "Perto do limite", f"{folga1} cidades", "aplicam menos de 1 ponto percentual acima do mínimo de 15%: uma queda pequena de receita já as colocaria abaixo.", "2024", "dados_tratados/improve_r5_r6_siops.csv", 1),
@@ -204,9 +230,9 @@ def main():
         ("controle", A, "Niterói fora da faixa três anos seguidos", "−44%", "em 2025 (−49% em 2023 e −48% em 2024): gasto bem abaixo do que a receita indica. Um alerta é um convite para olhar, nunca uma conclusão.", "2023 a 2025", "dados_tratados/improve_r1_triagem.csv", 1),
         ("controle", A, "Pessoal acima do limite prudencial", f"{acima_prud} municípios", "declaram despesa com pessoal acima do limite prudencial da Lei de Responsabilidade Fiscal (dado declarado: conferir antes de concluir).", "2024", "dados_tratados/improve_r7_limites.csv", 1),
         ("controle", A, "Dívida do estado", f"{pt(estado_rj['dcl'], 1)}%", f"da receita corrente líquida, acima do limite de {estado_rj['lim_dcl']}%, e pessoal em {pt(estado_rj['pes'], 1)}% (limite prudencial {pt(estado_rj['prud'], 1)}%).", "2024", fi, 1),
-        ("controle", A, "Conferência entre fontes", f"{int(cid.fora6.sum())} cidades", "ficam fora da faixa esperada na conferência entre o SIOPS e o Siconfi: pergunta de conciliação, não alarme.", "2024", "dados_tratados/improve_r5_r6_siops.csv", 1),
-        ("controle", AC, "A triagem mantém a ordem, não a lista", "1 de 3", "cidades da triagem se repetem em 2025, mas a ordem das cidades se mantém (correlação +0,83).", "2025", "dados_tratados/control_2025_resultados.csv", 0),
-        ("controle", AC, "Pergunta aberta: Baixadas Litorâneas", f"−{pt(abs(float(bl.res_modelo.median())), 0)}%", "é o resíduo mediano das dez cidades das Baixadas Litorâneas: gastam menos do que a receita indica, sem explicação nos dados públicos.", "2024", "dados_tratados/analyze_a2_residuos.csv", 1),
+        ("controle", A, "Conferência entre fontes", f"{int(cid.fora6.sum())} cidades", f"registram no SIOPS uma parte do gasto do Siconfi bem diferente da cidade do meio (R$ {pt(float(cid.razao.median()) * 100)} para cada R$ 100): pergunta de conciliação, não alarme.", "2024", "dados_tratados/improve_r5_r6_siops.csv", 1),
+        ("controle", AC, "A triagem mantém a ordem, não a lista", "1 de 3", f"cidades da triagem de 2024 continuam fora do intervalo em 2025; mas a ordem das cidades pelo desvio do previsto se mantém (correlação de postos de {sp25}).", "2025", "dados_tratados/control_2025_saida.txt", 0),
+        ("controle", AC, "Pergunta aberta: Baixadas Litorâneas", f"−{pt(abs(float(bl.res_modelo.median())), 0)}%", "é a distância mediana entre o gasto e o previsto pela receita nas dez cidades das Baixadas Litorâneas: gastam menos do que a receita indica, sem explicação nos dados públicos.", "2024", "dados_tratados/analyze_a2_residuos.csv", 1),
         ("controle", AC, "Balanço anual demora", "9 meses", "para o balanço de todas as cidades ficar completo (2025: entregas de janeiro a outubro de 2026).", "2025", "dados_tratados/control_2025_residuos.csv", 0),
         # como
         ("como", AC, "Oito de nove se mantiveram", f"{n_sust} de 9", "conclusões se mantiveram em 2025, com previsões escritas antes de abrir os dados. A que enfraqueceu foi a lista da triagem.", "2025", "dados_tratados/control_2025_resultados.csv", 0),
@@ -240,7 +266,7 @@ def main():
     dados = {
         "meta": {"versao": "1.0", "data": "26/10/2026", "janela_principal": "2024", "repositorio": "https://github.com/MatheusAugustoEC/saude-rj", "malhas_sha256": malhas, "fontes_arquivos": fontes_arquivos},
         "ufs": ufs, "cidades": cidades, "grupos": grupos, "regioes": regioes, "estado_rj": estado_rj, "globais": glob, "curiosidades": curiosidades,
-        "k": [{"k": r.K, "final": r.final} for r in kres.itertuples()], "dca": dca, "simulador": simulador, "melhorar": melhorar,
+        "k": [{"k": r.K, "final": r.final, "nome": KNOMES[r.K]} for r in kres.itertuples()], "dca": dca, "simulador": simulador, "melhorar": melhorar,
     }
     SAIDA.write_text(json.dumps(dados, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Gravado {SAIDA.relative_to(RAIZ)} ({SAIDA.stat().st_size / 1024:.0f} KB): {len(cidades)} cidades, {len(ufs)} estados, {len(curiosidades)} curiosidades.")

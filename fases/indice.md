@@ -9,7 +9,7 @@
 | 3 · Analyze | concluída | APROVADO | [relatório](fase-3-analyze/relatorio.pdf) | 24/10/2026 |
 | 4 · Improve | concluída | APROVADO | [relatório](fase-4-improve/relatorio.pdf) | 24/10/2026 |
 | 5 · Control | concluída | APROVADO | [relatório](fase-5-control/relatorio.pdf) | 25/10/2026 |
-| 6 · Entrega | página construída e auditada; aguardando tollgate | pendente | [relatório](fase-6-entrega/relatorio.pdf) | 26/10/2026 |
+| 6 · Entrega | página construída e auditada (2 rodadas); aguardando tollgate | pendente | [relatório](fase-6-entrega/relatorio.pdf) | 27/10/2026 |
 
 Marco 1 (Define) publicado no LinkedIn pelo Matheus em 22/10/2026.
 
